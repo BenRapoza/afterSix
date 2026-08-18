@@ -37,7 +37,9 @@
 .results .stop-photo { width: 126px; height: 84px; object-fit: cover; border-radius: 10px; border: 1px solid #d9eefb; flex: none; }
 .results .stop-photo--unavailable { display: grid; place-items: center; background: linear-gradient(145deg, #e9f7ff, #fff); color: #087eea; font: 500 32px/1 'Cormorant Garamond', serif; }
 .results .stop-actions { display: grid; justify-items: end; gap: 8px; }
+.results .reservation-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .results .stop-actions .venue-link { border: 1px solid rgba(18,24,32,.16); border-radius: 99px; background: rgba(255,255,255,.7); color: #121820; padding: 7px 9px; font-size: 11px; display: flex; gap: 3px; text-decoration: none; }
+.results .stop-actions .venue-link--resy { background: rgba(235,247,255,.88); }
 .results .reservation-badge { display: inline-flex; margin-top: 7px; padding: 5px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; line-height: 1; }
 .results .reservation-badge.not_needed { background: #e8f7ee; color: #267647; }
 .results .reservation-badge.recommended { background: #fff6d9; color: #8a6711; }

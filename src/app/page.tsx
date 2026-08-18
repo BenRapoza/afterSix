@@ -643,6 +643,7 @@ function Stop({
   regenerating: boolean;
 }) {
   const reservationSearch = `https://www.opentable.com/s?term=${encodeURIComponent(`${title} Boston`)}`;
+  const resySearch = `https://www.google.com/search?q=${encodeURIComponent(`${title} Boston site:resy.com`)}`;
   const href = action === "Reserve" ? reservationSearch : sourceUrl || venueUrls[title];
   const formatTime = (value: string) => {
     const digits = value.replace(/\D/g, "").padStart(4, "0");
@@ -671,9 +672,14 @@ function Stop({
       </div>
       <div className="stop-actions">
         <VenuePhoto imageUrl={imageUrl} sourceUrl={sourceUrl} title={title} />
-        <a className="venue-link" href={href} target="_blank" rel="noreferrer">
-          {action} <ArrowUpRight size={13} />
-        </a>
+        <div className="reservation-links">
+          <a className="venue-link" href={href} target="_blank" rel="noreferrer">
+            {action === "Reserve" ? "OpenTable" : action} <ArrowUpRight size={13} />
+          </a>
+          {action === "Reserve" && <a className="venue-link venue-link--resy" href={resySearch} target="_blank" rel="noreferrer">
+            Resy <ArrowUpRight size={13} />
+          </a>}
+        </div>
       </div>
     </div>
   );
