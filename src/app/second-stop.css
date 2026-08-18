@@ -418,3 +418,16 @@ main:not(.results) .discover { display: none; }
   .results .stop-feedback button, .results .reservation-badge { font-size: 10px; }
   .results .leg { margin-left: 62px; }
 }
+/* Public shared-itinerary voting */
+.shared-night { min-height: 100vh; padding: 32px 7vw; background: #eaf5f5; color: #101010; }
+.shared-night nav { display: flex; justify-content: space-between; margin-bottom: 12vh; }
+.shared-night nav a { color: inherit; text-decoration: none; font-weight: 700; }
+.shared-night section { max-width: 980px; }
+.shared-night h1 { font-size: clamp(3rem, 8vw, 6.5rem); margin: 0; }
+.shared-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 32px; }
+.shared-options button { text-align: left; background: rgba(255,255,255,.62); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.8); border-radius: 22px; padding: 22px; color: #111; cursor: pointer; }
+.shared-options button.selected { outline: 3px solid #7ebde6; }
+.shared-options button strong, .shared-options button span, .shared-options button small { display: block; }
+.shared-options button span { color: #387ca5; margin: 6px 0 14px; }
+.shared-options button p { border-top: 1px solid rgba(0,0,0,.1); padding-top: 9px; }
+@media (max-width: 620px) { .shared-night { padding: 24px; } .shared-night nav { margin-bottom: 8vh; } .shared-options { grid-template-columns: 1fr; } }

@@ -92,6 +92,8 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState<Record<string, "saved" | "skipped" | "more">>({});
+  const [savedNight, setSavedNight] = useState<{ id: string; share_code: string } | null>(null);
+  const [saveMessage, setSaveMessage] = useState("");
   const [regeneratingStop, setRegeneratingStop] = useState<string | null>(null);
   const [recentVenueIds, setRecentVenueIds] = useState<string[]>([]);
   const [plannerPicks, setPlannerPicks] = useState(() => plannerVenueCards.slice(0, 4));
@@ -116,9 +118,23 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
       localStorage.setItem("aftersix-feedback", JSON.stringify(next));
       return next;
     });
-    if (action === "saved" && itinerary.length) {
-      void fetch("/api/saved-nights", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: "Moonlit Boston", itinerary }) });
-    }
+  }
+
+  async function saveNight() {
+    if (savedNight || !itinerary.length) return;
+    setSaveMessage("Saving…");
+    const response = await fetch("/api/saved-nights", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: "Moonlit Boston", itinerary }) });
+    const data = await response.json() as { night?: { id: string; share_code: string }; error?: string };
+    if (!response.ok || !data.night) { setSaveMessage(data.error === "Unauthorized" ? "Sign in to save" : "Couldn’t save night"); return; }
+    setSavedNight(data.night);
+    setSaveMessage("Saved");
+  }
+
+  async function shareNight() {
+    if (!savedNight) { await saveNight(); return; }
+    const url = `${window.location.origin}/share/${savedNight.share_code}`;
+    await navigator.clipboard?.writeText(url);
+    setSaveMessage("Share link copied");
   }
 
   function rememberVenues(options: CatalogItem[][]) {
@@ -254,7 +270,7 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
   if (planned)
     return (
       <main className="results">
-        <Nav showMap />
+        <Nav showMap stops={itinerary} />
         <section className="route">
           <div className="heading">
             <div>
@@ -266,6 +282,8 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
           </div>
           <div className="route-tools">
             <WeatherChip />
+            <button className="edit-plan" onClick={() => void saveNight()}>{savedNight ? "Saved" : saveMessage || "Save night"}</button>
+            <button className="edit-plan" onClick={() => void shareNight()}>{savedNight ? "Share night" : "Save to share"}</button>
             <button className="edit-plan" onClick={() => setPlanned(false)}>
               <ArrowLeft size={14} /> Edit preferences
             </button>
@@ -331,7 +349,7 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
                     action={
                       item.bookingStatus.includes("ticket")
                         ? "Tickets"
-                        : "Details"
+                        : item.category === "dinner" ? "Reserve" : "Details"
                     }
                     />
                     {index < itinerary.length - 1 && <Leg from={item} to={itinerary[index + 1]} transport={transport} />}
@@ -535,10 +553,10 @@ function OptionStack({
     </div>
   );
 }
-function Nav({ showMap = false }: { showMap?: boolean }) {
+function Nav({ showMap = false, stops }: { showMap?: boolean; stops?: CatalogItem[] }) {
   return (
     <>
-      {showMap && <MapMount />}
+      {showMap && <MapMount stops={stops} />}
       <nav>
         <a className="logo" href="/">
           <span>afterSix</span>
@@ -615,7 +633,8 @@ function Stop({
   onRegenerate: () => void;
   regenerating: boolean;
 }) {
-  const href = sourceUrl || venueUrls[title];
+  const reservationSearch = `https://www.opentable.com/s?term=${encodeURIComponent(`${title} Boston`)}`;
+  const href = action === "Reserve" ? reservationSearch : sourceUrl || venueUrls[title];
   const formatTime = (value: string) => {
     const digits = value.replace(/\D/g, "").padStart(4, "0");
     const hour = Number(digits.slice(0, 2));

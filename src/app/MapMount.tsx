@@ -1,7 +1,6 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useState } from "react";
 import dynamic from "next/dynamic";
 import type { CatalogItem } from "@/lib/boston-catalog";
 
@@ -13,14 +12,6 @@ const route: CatalogItem[] = [
   { id: "drink", name: "Drink", neighborhood: "Fort Point", category: "drinks", start: "21:55", durationMinutes: 60, costPerPerson: 28, bookingStatus: "not_needed", description: "Cocktails", sourceUrl: "https://www.drinkfortpoint.com/", availabilityUpdatedAt: "unknown", latitude: 42.3507, longitude: -71.0464 },
 ];
 
-export default function MapMount() {
-  const [stops] = useState<CatalogItem[]>(() => {
-    try {
-      const saved = sessionStorage.getItem("aftersix-itinerary");
-      return saved ? JSON.parse(saved) as CatalogItem[] : route;
-    } catch {
-      return route;
-    }
-  });
+export default function MapMount({ stops = route }: { stops?: CatalogItem[] }) {
   return createPortal(<BostonMap stops={stops}/>, document.body);
 }
