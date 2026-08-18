@@ -472,8 +472,12 @@ main:not(.results) .discover { display: none; }
 
 /* Let iOS Safari's floating bottom bar overlay content instead of shortening each screen. */
 @media (max-width: 620px) {
-  html { scroll-snap-type: y proximity !important; overscroll-behavior-y: auto !important; background: #f6f1e9 !important; }
-  body { overscroll-behavior-y: auto !important; background: #f6f1e9 !important; }
+  html { scroll-snap-type: y proximity !important; overscroll-behavior-y: auto !important; background: #10100f !important; }
+  body { overscroll-behavior-y: auto !important; background: #10100f !important; }
+  html:has(main.landing-only), body:has(main.landing-only) { background: #16100e !important; }
+  html:has(main.planner-only), body:has(main.planner-only) { background: #071523 !important; }
+  html:has(main.how-only), body:has(main.how-only) { background: #1a1714 !important; }
+  html:has(main.results), body:has(main.results) { background: #dceef0 !important; }
 
   body,
   main.landing-only,
