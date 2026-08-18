@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -23,6 +23,15 @@ import "./second-stop.css";
 export const metadata: Metadata = {
   title: "afterSix — Date night, planned",
   description: "Beautifully planned nights out.",
+};
+
+// Allow Safari's floating browser controls to sit over the experience,
+// matching the full-bleed behavior used at the bottom of the site.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "overlays-content",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
