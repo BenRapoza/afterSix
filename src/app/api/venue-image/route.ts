@@ -56,9 +56,15 @@ export async function GET(request: NextRequest) {
     ].filter((image): image is string => typeof image === "string" && Boolean(publicUrl(image)) && !/logo|favicon|icon/i.test(image));
     const image = candidates[0];
     if (!image) return new NextResponse(null, { status: 204 });
-    const response = NextResponse.redirect(image, 302);
-    response.headers.set("Cache-Control", "public, max-age=86400, s-maxage=604800");
-    return response;
+    const imageResponse = await fetch(image, { signal: AbortSignal.timeout(6_000) });
+    const contentType = imageResponse.headers.get("content-type") ?? "";
+    if (!imageResponse.ok || !imageResponse.body || !contentType.startsWith("image/")) return new NextResponse(null, { status: 204 });
+    return new NextResponse(imageResponse.body, {
+      headers: {
+        "Content-Type": contentType,
+        "Cache-Control": "public, max-age=86400, s-maxage=604800, stale-while-revalidate=604800",
+      },
+    });
   } catch {
     return new NextResponse(null, { status: 204 });
   }
