@@ -40,8 +40,10 @@ function arrangeStops(dinner?: CatalogItem, middle?: CatalogItem, drinks?: Catal
   return [dinner, middle, drinks].filter((item): item is CatalogItem => Boolean(item));
 }
 
-function catalogOption(category: CatalogItem["category"], offset: number, excluded: string[] = [], budget?: string, payer?: string) {
-  const options = bostonCatalog.filter((item) => item.category === category && !excluded.includes(item.id));
+function catalogOption(category: CatalogItem["category"], offset: number, excluded: string[] = [], budget?: string, payer?: string, preference?: string) {
+  const base = bostonCatalog.filter((item) => item.category === category && !excluded.includes(item.id));
+  const tagged = preference ? base.filter((item) => item.tags?.includes(preference)) : [];
+  const options = tagged.length ? tagged : base;
   const target = budgetTarget(budget, payer) * 25;
   const ranked = [...options].sort((a, b) => Math.abs(a.costPerPerson * 2 - target) - Math.abs(b.costPerPerson * 2 - target));
   return ranked.length ? ranked[offset % ranked.length] : undefined;
@@ -164,7 +166,8 @@ async function ticketmasterEvent(mood?: string, variant = 0, excluded: string[] 
   const key = process.env.TICKETMASTER_API_KEY;
   if (!key) return undefined;
   const classificationName = mood === "Comedy" ? "Comedy" : mood === "Theater" ? "Arts & Theatre" : "Music";
-  const params = new URLSearchParams({ apikey: key, city: "Boston", stateCode: "MA", countryCode: "US", classificationName, size: "10", sort: "date,asc" });
+  const keyword = mood === "Open mic" ? "open mic" : mood === "Local bands" ? "local band" : undefined;
+  const params = new URLSearchParams({ apikey: key, city: "Boston", stateCode: "MA", countryCode: "US", classificationName, size: "10", sort: "date,asc", ...(keyword ? { keyword } : {}) });
   try {
     const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?${params}`, { signal: AbortSignal.timeout(1_750) });
     if (!response.ok) return undefined;
@@ -196,26 +199,26 @@ export async function POST(request: NextRequest) {
   const eventMood = selections.find((item) => ["Live music", "Local bands", "Open mic", "Comedy", "Theater"].includes(item));
   const wantsArt = selections.some((item) => ["Art events", "Museums with evening hours"].includes(item));
   const wantsActivity = selections.some((item) => ["Activities", "Dancing"].includes(item));
-  const shouldSearchWeb = variant === 0;
+  const drinkPreference = selections.find((item) => ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges"].includes(item));
   const dinnerQuery = `${input.food && input.food !== "Any cuisine" ? input.food : "great"} restaurant in Boston, MA`;
-  const drinkQuery = selections.includes("Wine bars") ? "wine bar in Boston, MA" : selections.includes("Breweries") ? "brewery in Boston, MA" : selections.includes("Sports bars") ? "sports bar in Boston, MA" : selections.includes("Speakeasies") ? "speakeasy in Boston, MA" : selections.includes("Rooftop bars") ? "rooftop bar in Boston, MA" : "cocktail bar in Boston, MA";
+  const drinkQuery = selections.includes("Lounges") ? "cocktail lounge in Boston, MA" : selections.includes("Wine bars") ? "wine bar in Boston, MA" : selections.includes("Breweries") ? "brewery in Boston, MA" : selections.includes("Sports bars") ? "sports bar in Boston, MA" : selections.includes("Speakeasies") ? "speakeasy cocktail bar in Boston, MA" : selections.includes("Rooftop bars") ? "rooftop cocktail bar in Boston, MA" : "craft cocktail bar in Boston, MA";
   const artQuery = selections.includes("Museums with evening hours") ? "museum with evening hours in Boston, MA" : "art event venue in Boston, MA";
   const [liveEvent, liveDinner, liveDrinks, liveArt, crawledDinner, crawledDrinks, crawledArt, geoDinner, geoDrinks, geoArt] = await Promise.all([
     eventMood ? ticketmasterEvent(eventMood, optionOffset, excluded) : Promise.resolve(undefined),
     wantsDinner ? googlePlace(dinnerQuery, "dinner", "1830", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
     wantsDrinks ? googlePlace(drinkQuery, "drinks", "2030", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
     wantsArt ? googlePlace(artQuery, "activity", "2015", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
-    wantsDinner && shouldSearchWeb ? firecrawlPlace(dinnerQuery, "dinner", "1830", optionOffset, excluded) : Promise.resolve(undefined),
-    wantsDrinks && shouldSearchWeb ? firecrawlPlace(drinkQuery, "drinks", "2030", optionOffset, excluded) : Promise.resolve(undefined),
-    wantsArt && shouldSearchWeb ? firecrawlPlace(artQuery, "activity", "2015", optionOffset, excluded) : Promise.resolve(undefined),
+    wantsDinner ? firecrawlPlace(dinnerQuery, "dinner", "1830", optionOffset, excluded) : Promise.resolve(undefined),
+    wantsDrinks ? firecrawlPlace(drinkQuery, "drinks", "2030", optionOffset, excluded) : Promise.resolve(undefined),
+    wantsArt ? firecrawlPlace(artQuery, "activity", "2015", optionOffset, excluded) : Promise.resolve(undefined),
     wantsDinner ? geoapifyPlace("dinner", "1830", optionOffset, excluded) : Promise.resolve(undefined),
     wantsDrinks ? geoapifyPlace("drinks", "2030", optionOffset, excluded) : Promise.resolve(undefined),
     wantsArt ? geoapifyPlace("activity", "2015", optionOffset, excluded) : Promise.resolve(undefined),
   ]);
-  const entertainment = eventMood ? liveEvent ?? catalogOption(eventMood === "Comedy" ? "comedy" : "live_music", optionOffset, excluded, input.budget, input.payer) : undefined;
+  const entertainment = eventMood ? liveEvent ?? catalogOption(eventMood === "Comedy" ? "comedy" : "live_music", optionOffset, excluded, input.budget, input.payer, eventMood) : undefined;
   const preferCrawled = optionOffset % 2 === 0;
   const dinner = wantsDinner ? (preferCrawled ? crawledDinner ?? liveDinner ?? geoDinner : liveDinner ?? geoDinner ?? crawledDinner) ?? catalogOption("dinner", optionOffset, excluded, input.budget, input.payer) : undefined;
-  const drinks = wantsDrinks ? (preferCrawled ? crawledDrinks ?? liveDrinks ?? geoDrinks : liveDrinks ?? geoDrinks ?? crawledDrinks) ?? catalogOption("drinks", optionOffset, excluded, input.budget, input.payer) : undefined;
+  const drinks = wantsDrinks ? (preferCrawled ? crawledDrinks ?? liveDrinks ?? geoDrinks : liveDrinks ?? geoDrinks ?? crawledDrinks) ?? catalogOption("drinks", optionOffset, excluded, input.budget, input.payer, drinkPreference) : undefined;
   const activity = wantsArt ? (preferCrawled ? crawledArt ?? liveArt ?? geoArt : liveArt ?? geoArt ?? crawledArt) ?? catalogOption("activity", optionOffset, excluded, input.budget, input.payer) : wantsActivity ? catalogOption("activity", optionOffset, excluded, input.budget, input.payer) : undefined;
   const middle = entertainment ?? activity;
 

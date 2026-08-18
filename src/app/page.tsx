@@ -163,6 +163,7 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
 
   function instantItinerary(variant: number, seed: number, random = false) {
     const choices = random ? [] : selectedMoods;
+    const drinkPreference = choices.find((item) => ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges"].includes(item));
     const wantsDinner = choices.some((item) => ["Dinner", "Appetizers"].includes(item));
     const wantsDrinks = choices.some((item) => ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges", "Nightlife"].includes(item));
     const wantsEvent = choices.some((item) => ["Live music", "Local bands", "Open mic", "Comedy", "Theater"].includes(item));
@@ -174,7 +175,8 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
     ];
     const fallback = categories.length ? categories : ["dinner" as const, "drinks" as const];
     return fallback.flatMap((category, index) => {
-      const options = bostonCatalog.filter((item) => item.category === category);
+      const base = bostonCatalog.filter((item) => item.category === category);
+      const options = category === "drinks" && drinkPreference ? base.filter((item) => item.tags?.includes(drinkPreference)).length ? base.filter((item) => item.tags?.includes(drinkPreference)) : base : base;
       const selected = options[(seed + variant + index) % options.length];
       if (!selected) return [];
       const start = index === 0 ? "1830" : index === 1 ? "2030" : "2200";
