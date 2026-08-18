@@ -6,6 +6,9 @@ type GooglePlace = { id: string; displayName?: { text?: string }; formattedAddre
 type FirecrawlResult = { title?: string; description?: string; url?: string; metadata?: { title?: string; description?: string; sourceURL?: string } };
 type GeoapifyFeature = { properties?: { place_id?: string; name?: string; formatted?: string; categories?: string[]; website?: string; datasource?: { raw?: { opening_hours?: string } } }; geometry?: { coordinates?: [number, number] } };
 const BOSTON = { latitude: 42.3601, longitude: -71.0589 };
+const drinkOptions = ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges", "Nightlife"];
+const eventOptions = ["Live music", "Local bands", "Open mic", "Comedy", "Theater"];
+const activityOptions = ["Art events", "Museums with evening hours", "Activities", "Dancing"];
 
 function minutesFromStart(value: string) {
   const digits = value.replace(/\D/g, "").padStart(4, "0");
@@ -166,7 +169,7 @@ async function ticketmasterEvent(mood?: string, variant = 0, excluded: string[] 
   const key = process.env.TICKETMASTER_API_KEY;
   if (!key) return undefined;
   const classificationName = mood === "Comedy" ? "Comedy" : mood === "Theater" ? "Arts & Theatre" : "Music";
-  const keyword = mood === "Open mic" ? "open mic" : mood === "Local bands" ? "local band" : undefined;
+  const keyword = mood === "Open mic" ? "open mic" : mood === "Local bands" ? "local band" : mood === "Live music" ? "live music" : undefined;
   const params = new URLSearchParams({ apikey: key, city: "Boston", stateCode: "MA", countryCode: "US", classificationName, size: "10", sort: "date,asc", ...(keyword ? { keyword } : {}) });
   try {
     const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?${params}`, { signal: AbortSignal.timeout(1_750) });
@@ -195,14 +198,18 @@ export async function POST(request: NextRequest) {
   const excluded = input.excludeIds ?? [];
   const selections = input.moods?.length ? input.moods : input.mood ? [input.mood] : [];
   const wantsDinner = selections.some((item) => ["Dinner", "Appetizers"].includes(item));
-  const wantsDrinks = selections.some((item) => ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges", "Nightlife"].includes(item));
-  const eventMood = selections.find((item) => ["Live music", "Local bands", "Open mic", "Comedy", "Theater"].includes(item));
+  const selectedDrinks = selections.filter((item) => drinkOptions.includes(item));
+  const selectedEvents = selections.filter((item) => eventOptions.includes(item));
+  const selectedActivities = selections.filter((item) => activityOptions.includes(item));
+  const drinkPreference = selectedDrinks.length ? selectedDrinks[variant % selectedDrinks.length] : undefined;
+  const eventMood = selectedEvents.length ? selectedEvents[variant % selectedEvents.length] : undefined;
+  const activityPreference = selectedActivities.length ? selectedActivities[variant % selectedActivities.length] : undefined;
+  const wantsDrinks = selectedDrinks.length > 0 || activityPreference === "Dancing";
   const wantsArt = selections.some((item) => ["Art events", "Museums with evening hours"].includes(item));
-  const wantsActivity = selections.some((item) => ["Activities", "Dancing"].includes(item));
-  const drinkPreference = selections.find((item) => ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges"].includes(item));
+  const wantsActivity = activityPreference === "Activities";
   const dinnerQuery = `${input.food && input.food !== "Any cuisine" ? input.food : "great"} restaurant in Boston, MA`;
-  const drinkQuery = selections.includes("Lounges") ? "cocktail lounge in Boston, MA" : selections.includes("Wine bars") ? "wine bar in Boston, MA" : selections.includes("Breweries") ? "brewery in Boston, MA" : selections.includes("Sports bars") ? "sports bar in Boston, MA" : selections.includes("Speakeasies") ? "speakeasy cocktail bar in Boston, MA" : selections.includes("Rooftop bars") ? "rooftop cocktail bar in Boston, MA" : "craft cocktail bar in Boston, MA";
-  const artQuery = selections.includes("Museums with evening hours") ? "museum with evening hours in Boston, MA" : "art event venue in Boston, MA";
+  const drinkQuery = activityPreference === "Dancing" ? "dance club with cocktails in Boston, MA" : drinkPreference === "Lounges" ? "cocktail lounge in Boston, MA" : drinkPreference === "Wine bars" ? "wine bar in Boston, MA" : drinkPreference === "Breweries" ? "brewery in Boston, MA" : drinkPreference === "Sports bars" ? "sports bar in Boston, MA" : drinkPreference === "Speakeasies" ? "speakeasy cocktail bar in Boston, MA" : drinkPreference === "Rooftop bars" ? "rooftop cocktail bar in Boston, MA" : "craft cocktail bar in Boston, MA";
+  const artQuery = activityPreference === "Museums with evening hours" ? "museum with evening hours in Boston, MA" : activityPreference === "Activities" ? "evening activity in Boston, MA" : "art event venue in Boston, MA";
   const [liveEvent, liveDinner, liveDrinks, liveArt, crawledDinner, crawledDrinks, crawledArt, geoDinner, geoDrinks, geoArt] = await Promise.all([
     eventMood ? ticketmasterEvent(eventMood, optionOffset, excluded) : Promise.resolve(undefined),
     wantsDinner ? googlePlace(dinnerQuery, "dinner", "1830", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),

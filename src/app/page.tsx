@@ -163,7 +163,8 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
 
   function instantItinerary(variant: number, seed: number, random = false) {
     const choices = random ? [] : selectedMoods;
-    const drinkPreference = choices.find((item) => ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges"].includes(item));
+    const drinkPreferences = choices.filter((item) => ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges"].includes(item));
+    const drinkPreference = drinkPreferences.length ? drinkPreferences[variant % drinkPreferences.length] : undefined;
     const wantsDinner = choices.some((item) => ["Dinner", "Appetizers"].includes(item));
     const wantsDrinks = choices.some((item) => ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges", "Nightlife"].includes(item));
     const wantsEvent = choices.some((item) => ["Live music", "Local bands", "Open mic", "Comedy", "Theater"].includes(item));
