@@ -342,6 +342,7 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
                         : undefined
                     }
                     bookingStatus={item.bookingStatus}
+                    reservable={item.category === "dinner" || item.category === "drinks"}
                     availabilityNote={item.availabilityNote}
                     feedback={feedback[item.id]}
                     onFeedback={(action) => recordFeedback(item.id, action)}
@@ -620,6 +621,7 @@ function Stop({
   sourceUrl,
   eventTiming,
   bookingStatus,
+  reservable,
   action,
   availabilityNote,
   feedback,
@@ -635,6 +637,7 @@ function Stop({
   sourceUrl: string;
   eventTiming?: { arrivalTime: string; endTime: string };
   bookingStatus: CatalogItem["bookingStatus"];
+  reservable: boolean;
   action: string;
   availabilityNote?: string;
   feedback?: "saved" | "skipped" | "more";
@@ -676,9 +679,8 @@ function Stop({
           <a className="venue-link" href={href} target="_blank" rel="noreferrer">
             {action === "Reserve" ? "OpenTable" : action} <ArrowUpRight size={13} />
           </a>
-          {action === "Reserve" && <a className="venue-link venue-link--resy" href={resySearch} target="_blank" rel="noreferrer">
-            Resy <ArrowUpRight size={13} />
-          </a>}
+          {reservable && action !== "Reserve" && <a className="venue-link" href={reservationSearch} target="_blank" rel="noreferrer">OpenTable <ArrowUpRight size={13} /></a>}
+          {reservable && <a className="venue-link venue-link--resy" href={resySearch} target="_blank" rel="noreferrer">Resy <ArrowUpRight size={13} /></a>}
         </div>
       </div>
     </div>
