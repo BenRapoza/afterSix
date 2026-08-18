@@ -1,0 +1,21 @@
+"use client";
+
+import "leaflet/dist/leaflet.css";
+import { divIcon } from "leaflet";
+import { MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip } from "react-leaflet";
+import type { CatalogItem } from "@/lib/boston-catalog";
+
+const townLabels = [
+  ["Boston", 42.3601, -71.0589],
+  ["Cambridge", 42.3736, -71.1097],
+  ["Brookline", 42.3318, -71.1212],
+  ["Chelsea", 42.3918, -71.0328],
+] as const;
+const townLabelAnchor = divIcon({ className: "town-label-anchor", html: "", iconSize: [1, 1], iconAnchor: [0, 0] });
+
+export default function BostonMap({ stops }: { stops: CatalogItem[] }) {
+  const positions = stops.map((stop) => [stop.latitude, stop.longitude] as [number, number]);
+  const geoapifyKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
+  const geoapifyTiles = geoapifyKey ? `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}{r}.png?apiKey=${encodeURIComponent(geoapifyKey)}` : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
+  return <div className="interactive-map"><MapContainer center={[42.354, -71.09]} zoom={12.5} scrollWheelZoom><TileLayer attribution={geoapifyKey ? 'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | © OpenStreetMap contributors' : "&copy; OpenStreetMap contributors &copy; CARTO"} url={geoapifyTiles} maxZoom={20}/>{townLabels.map(([name, latitude, longitude]) => <Marker key={name} position={[latitude, longitude]} icon={townLabelAnchor} interactive={false}><Tooltip permanent direction="center" className="town-label">{name}</Tooltip></Marker>)}{positions.length > 1 && <Polyline positions={positions} pathOptions={{ color: "#56b6e8", weight: 3, opacity: .85 }}/>} {stops.map((stop, index) => <Marker key={stop.id} position={[stop.latitude, stop.longitude]} icon={divIcon({ className: "route-pin", html: `<span>${index + 1}</span>`, iconSize: [32, 32], iconAnchor: [16, 16] })}><Popup><b>{index + 1}. {stop.name}</b><br/>{stop.neighborhood}<br/><a href={`https://www.google.com/maps/dir/?api=1&destination=${stop.latitude},${stop.longitude}`} target="_blank" rel="noreferrer">Directions ↗</a></Popup></Marker>)}</MapContainer></div>;
+}

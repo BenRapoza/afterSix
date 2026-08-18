@@ -1,0 +1,12 @@
+.hero {
+  background: linear-gradient(90deg, rgba(9, 20, 34, .22), rgba(9, 20, 34, .06)), url('https://images.unsplash.com/photo-1585009467966-8c7d2ae704ad?auto=format&fit=crop&w=2200&q=85') center/cover !important;
+}
+
+main:not(.results) > nav { color: #121820; }
+main:not(.results) > nav button { background: #fff; border-color: #fff; }
+.hero .copy { max-width: 570px; padding: 30px; border-radius: 18px; background: #fff; box-shadow: 0 20px 55px rgba(12, 30, 50, .18); }
+.hero .copy > p:last-child { color: #4b5563; }
+.hero .planner { background: #fff; color: #121820; }
+.hero-footer { color: #fff; border-top-color: rgba(255,255,255,.55); text-shadow: 0 1px 4px rgba(0,0,0,.35); }
+
+@media (max-width: 850px) { .hero .copy { padding: 22px; } }

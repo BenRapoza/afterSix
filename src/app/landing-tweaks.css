@@ -1,0 +1,10 @@
+:root { --azure: #8ed3ff; }
+.hero .copy { background: transparent; box-shadow: none; padding: 0; }
+.hero .copy h1 { color: #fff; text-shadow: 0 3px 18px rgba(0,0,0,.5); }
+.hero .copy h1 em, .hero .kicker, .hero .planner .moods .active { color: var(--azure); }
+.hero .planner .moods .active { background: #087eea; }
+.hero .cta, .discover .outline { background: var(--azure); color: #102137; }
+.discover .outline { text-decoration: none; }
+.hero .cta { background: #56b6e8; }
+.hero-footer { color: #fff; font-weight: 700; font-size: 12px; text-shadow: 0 2px 7px rgba(0,0,0,.75); }
+.hero-footer span:last-child { color: #fff; }

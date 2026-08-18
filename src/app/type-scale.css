@@ -1,0 +1,18 @@
+.planner { width: min(580px, 48vw); padding: 28px; }
+.planner header { font-size: 19px; padding-bottom: 23px; }
+.planner header small { font-size: 11px; }
+.quick button { padding: 14px 11px; }
+.quick span { font-size: 13px; }
+.quick span small, .quick small, .label, .selects label, .intensity > span { font-size: 10px; }
+.moods { gap: 8px; margin-top: 11px; }
+.moods button { padding: 8px 12px; font-size: 13px; }
+.selects { gap: 11px; margin-top: 20px; }
+.selects select { padding: 12px; font-size: 13px; }
+.intensity { margin-top: 20px; }
+.intensity small { font-size: 12px; }
+.cta { padding: 16px; margin-top: 22px; font-size: 15px; }
+.error-message { color: #b8462a; margin: 12px 0 0; font-size: 13px; text-align: center; }
+
+@media (max-width: 850px) {
+  .planner { width: 100%; padding: 22px; }
+}

@@ -1,0 +1,27 @@
+.discover > div:first-child {
+  background: #fff !important;
+  color: #121820;
+}
+.discover > div:first-child h2 { color: #121820; }
+.discover > div:first-child h2 em { color: #087eea; }
+.discover > div:first-child > p:last-of-type { color: #4b5563; }
+.discover .outline { background: #087eea; border-color: #087eea; color: #fff; }
+.discover .tiles .tile { background: #fff; color: #121820; box-shadow: 0 16px 35px rgba(0,0,0,.18); }
+.discover .tiles .tile:nth-child(2), .discover .tiles .tile:nth-child(3), .discover .tiles .tile:nth-child(4) { background: #fff; color: #121820; }
+
+.how .kicker, .how > h2 {
+  background: #fff;
+  padding: 12px 18px;
+  text-shadow: none;
+}
+.how .kicker { margin: 0; border-radius: 15px 15px 0 0; }
+.how > h2 { border-radius: 0 15px 15px 15px; color: #121820 !important; }
+.how > h2 em { color: #087eea !important; }
+.how .steps article { background: #fff; box-shadow: 0 16px 35px rgba(0,0,0,.18); }
+.how .steps h3 { color: #121820 !important; }
+.how .steps p { color: #4b5563 !important; }
+.how .steps b { color: #087eea; }
+
+.results .heading { background: #fff; border-radius: 16px; padding: 20px !important; box-shadow: 0 16px 35px rgba(0,0,0,.14); }
+.results .heading h2 { color: #121820; }
+.results .route-card { background: #fff; }

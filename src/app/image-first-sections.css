@@ -1,0 +1,29 @@
+.discover {
+  background: url('https://images.squarespace-cdn.com/content/v1/64d6b689b4716c79f3643202/ee183c9f-5535-405a-8574-10522629a703/Copy%2Bof%2BHooch-02767.jpg') center/cover !important;
+}
+
+.discover > div:first-child {
+  padding: 34px;
+  border-radius: 18px;
+  background: #19130f;
+  box-shadow: 0 22px 55px rgba(0,0,0,.32);
+}
+
+.discover::after {
+  display: none;
+}
+
+.how {
+  background: url('https://images.unsplash.com/photo-1651842462716-9829733957b6?auto=format&fit=crop&w=1600&q=78') center/cover !important;
+  color: #fff;
+  text-shadow: 0 2px 16px rgba(0,0,0,.54);
+}
+
+.how .kicker { color: #ffd09c; }
+.how h2, .how h2 em { color: #fff; }
+.how .steps { width: min(100%, 920px); }
+.how .steps article { padding: 20px; border: 0; border-radius: 14px; background: #1c1713; text-shadow: none; }
+.how .steps h3, .how .steps p { color: #fff; }
+.how::after { display: none; }
+
+@media (max-width: 700px) { .discover > div:first-child { padding: 24px; } }

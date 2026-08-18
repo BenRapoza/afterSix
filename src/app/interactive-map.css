@@ -1,0 +1,76 @@
+.interactive-map { position: fixed; inset: 0; z-index: 0; }
+.interactive-map .leaflet-container { height: 100%; width: 100%; }
+.interactive-map .leaflet-control-zoom { border: 0; box-shadow: 0 5px 20px rgba(16,33,55,.16); }
+.interactive-map .leaflet-control-zoom a { color: #121820; border: 0; }
+.interactive-map .town-label-anchor { background: transparent; border: 0; }
+.interactive-map .town-label { padding: 4px 7px; border: 1px solid rgba(18,24,32,.12); border-radius: 7px; background: rgba(255,255,255,.82); color: #1f2937; box-shadow: 0 3px 10px rgba(16,33,55,.12); font: 700 10px/1 'DM Sans', sans-serif; white-space: nowrap; }
+.interactive-map .town-label::before { display: none; }
+.route-pin { background: #e34b4b; border: 3px solid #fff; border-radius: 50% 50% 50% 0; box-shadow: 0 4px 12px rgba(16,33,55,.25); color: #fff; display: grid; place-items: center; font: 700 12px/1 'DM Sans', sans-serif; transform: rotate(-45deg); }
+.route-pin span { transform: rotate(45deg); }
+.results > nav, .results > .route { position: relative; z-index: 3; }
+
+/* Itinerary view: same white, black, and baby-blue language as the landing page. */
+.results { background: transparent; z-index: 1; }
+.results > nav, .results > nav .logo { color: #121820; }
+.results > nav .logo img { filter: brightness(0); }
+.results > nav button { color: #121820; border-color: #121820; }
+.results::before, .results::after { display: none; }
+.results .route { background: linear-gradient(90deg, rgba(255,255,255,.36), transparent 58%); }
+.results .heading, .results .route-card { border-color: rgba(143,211,255,.9); }
+.results .route-card > header { background: #fff; color: #121820; border-bottom: 1px solid #d9eefb; }
+.results .route-card header small, .results .total span { color: #4b5563; }
+.results .total .per-person { color: #4b5563; font-size: 10px; letter-spacing: 0; }
+.results .route-card h3, .results .total b { color: #121820; }
+.results .stop-icon { background: #dff3ff; color: #087eea; }
+.results .available, .results .required { color: #087eea; }
+.results .edit-plan { background: #fff; border-color: #8fd3ff; color: #121820; }
+.results .note { border-color: #d9eefb; color: #4b5563; }
+.results .event-timing { color: #087eea; font-size: 11px; font-weight: 700; margin-top: 6px; }
+.results .availability-note { color: #4b5563; font-size: 10px; font-weight: 700; margin: 6px 0 0; }
+.results .stop-feedback { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.results .stop-feedback button { border: 1px solid rgba(18,24,32,.14); border-radius: 99px; background: rgba(255,255,255,.76); color: #121820; cursor: pointer; font-size: 9px; font-weight: 700; padding: 4px 7px; }
+.results .stop-feedback button.active { background: #121820; border-color: #121820; color: #fff; }
+.results .stop-feedback button:disabled { cursor: wait; opacity: .6; }
+.results .stop { grid-template-columns: 64px 40px minmax(0, 1fr) 126px; align-items: start; }
+.results .stop-title { display: flex; align-items: center; gap: 12px; }
+.results .stop-title h4 { flex: 1; }
+.results .stop-photo { width: 126px; height: 84px; object-fit: cover; border-radius: 10px; border: 1px solid #d9eefb; flex: none; }
+.results .stop-photo--unavailable { display: grid; place-items: center; background: linear-gradient(145deg, #e9f7ff, #fff); color: #087eea; font: 500 32px/1 'Cormorant Garamond', serif; }
+.results .stop-actions { display: grid; justify-items: end; gap: 8px; }
+.results .stop-actions .venue-link { border: 1px solid rgba(18,24,32,.16); border-radius: 99px; background: rgba(255,255,255,.7); color: #121820; padding: 7px 9px; font-size: 11px; display: flex; gap: 3px; text-decoration: none; }
+.results .reservation-badge { display: inline-flex; margin-top: 7px; padding: 5px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; line-height: 1; }
+.results .reservation-badge.not_needed { background: #e8f7ee; color: #267647; }
+.results .reservation-badge.recommended { background: #fff6d9; color: #8a6711; }
+.results .reservation-badge.required { background: #ffeded; color: #b53333; }
+.results .reservation-badge.ticket_required { background: #e6f4ff; color: #087eea; }
+.results .reservation-badge.limited_availability { background: #fff1e4; color: #aa5a15; }
+.results .route-advisory { margin: 14px 20px 0; padding: 10px 12px; border-radius: 10px; background: #fff6d9; color: #6f5510; font-size: 12px; font-weight: 700; }
+.results .leg a { color: #087eea; font-weight: 700; text-decoration: none; }
+.results .rideshare-leg { height: auto; display: grid; gap: 6px; }
+.results .rideshare-leg div { display: flex; gap: 12px; }
+.results .itinerary-stack { position: relative; width: min(470px, 45vw); margin: 0; }
+.results .itinerary-stack .route-card { position: relative; z-index: 3; width: 100%; max-width: none; margin: 0; }
+.results .option-stack { position: absolute; z-index: 1; top: 10px; bottom: 0; right: -46px; width: 100%; pointer-events: none; }
+.results .option-card { position: absolute; inset: 0 auto auto 0; width: 100%; height: calc(100% - 18px); padding: 14px 12px; border: 1px solid #8fd3ff; border-radius: 16px; background: #e9f7ff; color: #087eea; box-shadow: 0 10px 24px rgba(16, 33, 55, .14); pointer-events: auto; transition: transform .22s ease, box-shadow .22s ease; text-align: left; }
+.results .option-card span { display: none; }
+.results .option-card b { position: absolute; z-index: 1; top: 10px; right: 7px; font: 700 16px/1 'DM Mono', monospace; }
+.results .option-card-0 { z-index: 2; transform: translate(-24px, 7px); background: #f4fbff; }
+.results .option-card-1 { z-index: 1; transform: translate(0, 14px); background: #e9f7ff; }
+.results .option-card:hover { box-shadow: 0 13px 28px rgba(16, 33, 55, .25); }
+.results .option-label { display: block; color: #087eea; font: 700 10px/1 'DM Mono', monospace; letter-spacing: .09em; text-transform: uppercase; margin-bottom: 7px; }
+@media (max-width: 800px) { .results .itinerary-stack { width: 100%; } }
+@media (max-width: 620px) { .results .option-stack { right: -18px; } .results .option-card { padding-left: 8px; } .results .option-card b { font-size: 13px; } .results .stop { grid-template-columns: 52px 35px minmax(0,1fr); } .results .stop-actions { grid-column: 3; grid-row: 2; justify-items: start; grid-template-columns: 92px auto; align-items: end; } .results .stop-photo { width: 92px; height: 62px; } }
+
+/* The transport field owns the full row until the food preference is relevant. */
+.planner .selects:has(> label:only-child) { grid-template-columns: 1fr; }
+.planner .budget { margin-top: 16px; padding: 12px; border: 1px solid rgba(18,24,32,.14); border-radius: 10px; background: #fff; }
+.planner .budget-heading, .planner .payer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.planner .budget-heading span, .planner .payer > span { color: #121820; font-size: 12px; font-weight: 700; }
+.planner .budget-heading b { color: #087eea; font-size: 12px; }
+.planner .budget > small { display: block; margin-top: 3px; color: #697386; font: 10px/1 'DM Mono', monospace; text-transform: uppercase; }
+.planner .budget input { width: 100%; margin: 12px 0 4px; accent-color: #087eea; }
+.planner .budget-scale { display: flex; justify-content: space-between; color: #697386; font-size: 10px; }
+.planner .payer { flex-wrap: wrap; justify-content: flex-start; margin-top: 13px; }
+.planner .payer > span { width: 100%; margin-bottom: 1px; }
+.planner .payer button { border: 1px solid rgba(18,24,32,.16); border-radius: 99px; background: #fff; color: #121820; padding: 6px 10px; font-size: 11px; }
+.planner .payer button.active { background: #121820; border-color: #121820; color: #fff; }

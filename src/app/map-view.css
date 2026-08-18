@@ -1,0 +1,94 @@
+.results {
+  min-height: 100vh;
+  background: #dbe7e4 url('https://staticmap.openstreetmap.de/staticmap.php?center=42.3601,-71.0589&zoom=13&size=1600x1100&maptype=mapnik') center top / cover fixed;
+  position: relative;
+  isolation: isolate;
+}
+
+.results::before {
+  content: "1\A 2\A 3";
+  white-space: pre;
+  position: fixed;
+  z-index: 2;
+  left: 64%;
+  top: 24%;
+  width: 42px;
+  height: 210px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  font: 700 13px/42px 'DM Sans', sans-serif;
+  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  filter: drop-shadow(0 4px 5px rgba(0,0,0,.26));
+  background: linear-gradient(155deg, transparent 11%, #d7653f 11.5%, #d7653f 12.5%, transparent 13%, transparent 47%, #d7653f 47.5%, #d7653f 48.5%, transparent 49%);
+  pointer-events: none;
+}
+
+.results::after {
+  content: "";
+  position: fixed;
+  z-index: 1;
+  left: calc(64% - 1px);
+  top: 24%;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #d7653f;
+  box-shadow: 0 84px 0 #d7653f, 0 168px 0 #d7653f;
+  pointer-events: none;
+}
+
+.results .route {
+  min-height: 100vh;
+  padding: 116px 5vw 52px;
+  background: linear-gradient(90deg, rgba(21, 25, 23, .12), transparent 55%);
+}
+
+.results .heading {
+  width: min(470px, 45vw);
+  margin: 0 0 15px;
+  padding: 0 8px;
+}
+
+.results .heading h2 {
+  color: #1c211e;
+}
+
+.results .route-card {
+  width: min(470px, 45vw);
+  margin: 0;
+  border: 1px solid rgba(255, 255, 255, .72);
+  box-shadow: 0 24px 70px rgba(17, 28, 25, .28);
+}
+
+.results .edit-plan {
+  position: fixed;
+  right: 5vw;
+  top: 92px;
+  z-index: 4;
+  border: 1px solid rgba(31, 37, 34, .22);
+  border-radius: 999px;
+  background: rgba(255, 253, 248, .9);
+  padding: 11px 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #1c211e;
+  font-size: 12px;
+  box-shadow: 0 8px 20px rgba(14, 27, 21, .12);
+}
+
+.results .discover, .results .how { position: relative; z-index: 1; }
+
+@media (max-width: 800px) {
+  .results { background-size: auto 100%; }
+  .results .route { padding: 95px 16px 32px; }
+  .results .heading, .results .route-card { width: 100%; }
+  .results .heading { padding: 0; }
+  .results .heading h2 { font-size: 44px; }
+  .results .edit-plan { right: 16px; top: 72px; }
+  .results::before, .results::after { left: 76%; }
+}

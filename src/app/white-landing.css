@@ -1,0 +1,21 @@
+main:not(.results) > nav { color: #121820; }
+main:not(.results) > nav button { color: #121820; border-color: #121820; }
+
+.hero {
+  min-height: 100vh !important;
+  background: #fff !important;
+  color: #121820 !important;
+}
+
+.hero .orb { display: none; }
+.hero .kicker { color: #087eea; }
+.hero h1 em { color: #087eea; }
+.hero .copy > p:last-child { color: #4b5563; }
+.hero .planner { border: 1px solid #d8e4f0; box-shadow: 0 24px 80px rgba(15, 83, 155, .12); }
+.hero .quick svg:first-child { color: #087eea; }
+.hero .moods .active { background: #087eea; border-color: #087eea; }
+.hero .cta { background: #087eea; }
+.hero-footer { color: #536171; border-top-color: #dce5ef; }
+.hero-footer span:last-child { color: #087eea; }
+
+@media (max-width: 850px) { .hero { min-height: 100svh !important; } }

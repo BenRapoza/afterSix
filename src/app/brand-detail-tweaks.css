@@ -1,0 +1,4 @@
+main:not(.results) > nav { color: #fff; }
+main:not(.results) > nav button { color: #fff; border-color: rgba(255,255,255,.8); background: transparent; }
+.hero .copy > p:last-child { color: #e2e7ed; font-weight: 600; text-shadow: 0 2px 8px rgba(0,0,0,.55); }
+.how .steps b { display: inline-block; transform: translateY(12px); }
