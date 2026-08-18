@@ -587,8 +587,7 @@ function WeatherChip() {
   useEffect(() => {
     void fetch("/api/weather").then((response) => response.ok ? response.json() : null).then(setWeather).catch(() => setWeather(null));
   }, []);
-  if (!weather) return null;
-  return <span className="weather-chip" title={weather.description}>{weather.emoji} {weather.temperature}°F</span>;
+  return <span className="weather-chip" title={weather?.description ?? "Boston weather"}>{weather ? `${weather.emoji} ${weather.temperature}°F` : "☀️"}</span>;
 }
 function Field({
   icon,
