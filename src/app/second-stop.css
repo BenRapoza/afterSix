@@ -23,6 +23,13 @@ nav .logo small { font: 500 10px/1.2 'DM Sans', sans-serif; letter-spacing: .08e
 .results .option-card-1 { z-index: 4; transform: translate(0, 16px); clip-path: inset(0 0 0 calc(100% - 38px)); }
 .results .option-card b { top: 10px; right: 8px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: #087eea; color: #fff; box-shadow: 0 3px 8px rgba(16,33,55,.22); }
 @media (max-width: 620px) {
+  main.landing-only > nav {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+  }
+
   .results .route { padding-left: 16px; padding-right: 16px; }
   .results .heading { width: calc(100vw - 52px); }
   .results .itinerary-stack { width: calc(100vw - 94px); }
@@ -455,10 +462,10 @@ main:not(.results) .discover { display: none; }
 
   /* Keep both inactive option tabs exposed to the right of Moonlit Boston. */
   .results .itinerary-stack { overflow: visible !important; }
-  .results .option-stack { right: -78px !important; top: 8px !important; bottom: 0; overflow: visible !important; }
+  .results .option-stack { right: -46px !important; top: 10px !important; bottom: 0; overflow: visible !important; }
   .results .option-card { clip-path: none !important; overflow: visible !important; }
-  .results .option-card-0 { transform: translate(-22px, 7px) !important; }
-  .results .option-card-1 { transform: translate(12px, 14px) !important; }
+  .results .option-card-0 { transform: translate(-24px, 7px) !important; }
+  .results .option-card-1 { transform: translate(0, 14px) !important; }
   .results .option-card b { display: grid !important; place-items: center; top: 8px !important; right: 7px !important; width: 26px; height: 26px; border-radius: 50%; background: #087eea; color: #fff; }
 }
 
@@ -482,4 +489,5 @@ main:not(.results) .discover { display: none; }
   }
 
   .results .interactive-map { height: 100lvh !important; }
+  main.landing-only > nav { position: relative !important; top: auto !important; left: auto !important; right: auto !important; z-index: 5; }
 }
