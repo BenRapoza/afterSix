@@ -16,6 +16,20 @@ function isVenueSearchResult(item: FirecrawlResult) {
   const questionOrForum = /\?|^(i |we |my |anyone |can you |what |which |where )/i.test(item.title ?? "") || /reddit|quora|stackoverflow|tripadvisor/i.test(url);
   return Boolean(url) && !editorialPath.test(url) && !editorialCopy.test(copy) && !closed.test(copy) && !questionOrForum;
 }
+
+function cleanVenueCopy(value: string) {
+  return value
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function cleanVenueName(value: string) {
+  const linkedLabels = [...value.matchAll(/\[([^\]]+)\]\([^)]*\)/g)].map((match) => match[1].trim()).filter((label) => label && !/^visit$/i.test(label));
+  if (linkedLabels.length) return linkedLabels.at(-1)!;
+  return cleanVenueCopy(value).replace(/\s+[|—–-]\s+(official site|visit us|home)$/i, "").trim();
+}
 const drinkOptions = ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges", "Nightlife"];
 const eventOptions = ["Live music", "Local bands", "Open mic", "Comedy", "Theater"];
 const activityOptions = ["Art events", "Museums with evening hours", "Activities", "Dancing"];
@@ -169,9 +183,9 @@ async function firecrawlPlace(query: string, category: CatalogItem["category"], 
     const result = (available.length ? available : results)[variant % (available.length || results.length)];
     if (!result) return undefined;
     const rawName = result.title ?? result.metadata?.title ?? "Boston venue";
-    const name = rawName.replace(/\s+[|—–-]\s+[^|—–-]+$/, "").trim();
+    const name = cleanVenueName(rawName);
     const fallbackType = category === "drinks" ? "Bar" : category === "activity" ? "Evening activity" : "Restaurant";
-    return { id: `firecrawl-${encodeURIComponent(result.url ?? name)}`, name, neighborhood: "Boston", category, start, durationMinutes: category === "dinner" ? 90 : 60, costPerPerson: 0, bookingStatus: category === "drinks" ? "not_needed" : "recommended", description: result.description ?? result.metadata?.description ?? `${fallbackType} discovered via Firecrawl`, sourceUrl: result.url ?? result.metadata?.sourceURL ?? "https://www.google.com/maps", availabilityUpdatedAt: new Date().toISOString(), availabilityNote: "Official site found via Firecrawl", ...BOSTON };
+    return { id: `firecrawl-${encodeURIComponent(result.url ?? name)}`, name, neighborhood: "Boston", category, start, durationMinutes: category === "dinner" ? 90 : 60, costPerPerson: 0, bookingStatus: category === "drinks" ? "not_needed" : "recommended", description: cleanVenueCopy(result.description ?? result.metadata?.description ?? `${fallbackType} discovered via Firecrawl`), sourceUrl: result.url ?? result.metadata?.sourceURL ?? "https://www.google.com/maps", availabilityUpdatedAt: new Date().toISOString(), availabilityNote: "Official site found via Firecrawl", ...BOSTON };
   } catch { return undefined; }
 }
 
