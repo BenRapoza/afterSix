@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { bostonCatalog, type CatalogItem } from "@/lib/boston-catalog";
 
 type TicketmasterEvent = { id: string; name: string; url?: string; images?: Array<{ url?: string; width?: number }>; dates?: { start?: { localTime?: string; localDate?: string } }; priceRanges?: Array<{ min?: number }>; classifications?: Array<{ segment?: { name?: string } }>; _embedded?: { venues?: Array<{ name?: string; city?: { name?: string }; location?: { latitude?: string; longitude?: string } }> } };
-type GooglePlace = { id: string; displayName?: { text?: string }; formattedAddress?: string; location?: { latitude?: number; longitude?: number }; rating?: number; googleMapsUri?: string; primaryTypeDisplayName?: { text?: string }; photos?: Array<{ name?: string }>; currentOpeningHours?: { openNow?: boolean }; priceLevel?: string };
+type GooglePlace = { id: string; displayName?: { text?: string }; formattedAddress?: string; location?: { latitude?: number; longitude?: number }; rating?: number; googleMapsUri?: string; primaryTypeDisplayName?: { text?: string }; photos?: Array<{ name?: string }>; currentOpeningHours?: { openNow?: boolean }; businessStatus?: string; priceLevel?: string };
 type FirecrawlResult = { title?: string; description?: string; url?: string; metadata?: { title?: string; description?: string; sourceURL?: string } };
 type GeoapifyFeature = { properties?: { place_id?: string; name?: string; formatted?: string; categories?: string[]; website?: string; datasource?: { raw?: { opening_hours?: string } } }; geometry?: { coordinates?: [number, number] } };
 const BOSTON = { latitude: 42.3601, longitude: -71.0589 };
@@ -124,12 +124,12 @@ async function googlePlace(query: string, category: CatalogItem["category"], sta
   try {
     const response = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": key, "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.googleMapsUri,places.primaryTypeDisplayName,places.photos,places.currentOpeningHours,places.priceLevel" },
+      headers: { "Content-Type": "application/json", "X-Goog-Api-Key": key, "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.googleMapsUri,places.primaryTypeDisplayName,places.photos,places.currentOpeningHours,places.businessStatus,places.priceLevel" },
       body: JSON.stringify({ textQuery: query, locationBias: { circle: { center: BOSTON, radius: 6000 } }, languageCode: "en" }),
       signal: AbortSignal.timeout(1_750),
     });
     if (!response.ok) return undefined;
-    const places = ((await response.json()) as { places?: GooglePlace[] }).places?.filter((item) => item.location && item.displayName?.text).sort((a, b) => placeScore(b, budget, payer) - placeScore(a, budget, payer)) ?? [];
+    const places = ((await response.json()) as { places?: GooglePlace[] }).places?.filter((item) => item.location && item.displayName?.text && (item.businessStatus === undefined || item.businessStatus === "OPERATIONAL")).sort((a, b) => placeScore(b, budget, payer) - placeScore(a, budget, payer)) ?? [];
     const available = places.filter((item) => !excluded.includes(`google-${item.id}`));
     const place = (available.length ? available : places)[variant % (available.length || places.length)];
     if (!place?.location || !place.displayName?.text) return undefined;
@@ -154,7 +154,7 @@ async function firecrawlPlace(query: string, category: CatalogItem["category"], 
     if (!response.ok) return undefined;
     const data = await response.json() as { success?: boolean; data?: { web?: FirecrawlResult[] } };
     const excludedHosts = /yelp|tripadvisor|opentable|resy|instagram|facebook|tiktok/i;
-    const results = (data.data?.web ?? []).filter((item) => item.url && !excludedHosts.test(item.url) && (item.title || item.metadata?.title));
+    const results = (data.data?.web ?? []).filter((item) => item.url && !excludedHosts.test(item.url) && (item.title || item.metadata?.title) && !/permanently closed|closed permanently|no longer open/i.test(`${item.title ?? ""} ${item.description ?? ""} ${item.metadata?.description ?? ""}`));
     const available = results.filter((item) => !excluded.includes(`firecrawl-${encodeURIComponent(item.url ?? item.title ?? "")}`));
     const result = (available.length ? available : results)[variant % (available.length || results.length)];
     if (!result) return undefined;
@@ -165,12 +165,14 @@ async function firecrawlPlace(query: string, category: CatalogItem["category"], 
   } catch { return undefined; }
 }
 
-async function ticketmasterEvent(mood?: string, variant = 0, excluded: string[] = []): Promise<CatalogItem | undefined> {
+async function ticketmasterEvent(mood?: string, variant = 0, excluded: string[] = [], date?: string): Promise<CatalogItem | undefined> {
   const key = process.env.TICKETMASTER_API_KEY;
   if (!key) return undefined;
   const classificationName = mood === "Comedy" ? "Comedy" : mood === "Theater" ? "Arts & Theatre" : "Music";
   const keyword = mood === "Open mic" ? "open mic" : mood === "Local bands" ? "local band" : mood === "Live music" ? "live music" : undefined;
-  const params = new URLSearchParams({ apikey: key, city: "Boston", stateCode: "MA", countryCode: "US", classificationName, size: "10", sort: "date,asc", ...(keyword ? { keyword } : {}) });
+  const nextDate = date ? new Date(`${date}T12:00:00Z`) : undefined;
+  if (nextDate) nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+  const params = new URLSearchParams({ apikey: key, city: "Boston", stateCode: "MA", countryCode: "US", classificationName, size: "10", sort: "date,asc", ...(keyword ? { keyword } : {}), ...(date ? { startDateTime: `${date}T00:00:00Z`, endDateTime: `${nextDate!.toISOString().slice(0, 10)}T04:00:00Z` } : {}) });
   try {
     const response = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?${params}`, { signal: AbortSignal.timeout(1_750) });
     if (!response.ok) return undefined;
@@ -211,7 +213,7 @@ export async function POST(request: NextRequest) {
   const drinkQuery = activityPreference === "Dancing" ? "dance club with cocktails in Boston, MA" : drinkPreference === "Lounges" ? "cocktail lounge in Boston, MA" : drinkPreference === "Wine bars" ? "wine bar in Boston, MA" : drinkPreference === "Breweries" ? "brewery in Boston, MA" : drinkPreference === "Sports bars" ? "sports bar in Boston, MA" : drinkPreference === "Speakeasies" ? "speakeasy cocktail bar in Boston, MA" : drinkPreference === "Rooftop bars" ? "rooftop cocktail bar in Boston, MA" : "craft cocktail bar in Boston, MA";
   const artQuery = activityPreference === "Museums with evening hours" ? "museum with evening hours in Boston, MA" : activityPreference === "Activities" ? "evening activity in Boston, MA" : "art event venue in Boston, MA";
   const [liveEvent, liveDinner, liveDrinks, liveArt, crawledDinner, crawledDrinks, crawledArt, geoDinner, geoDrinks, geoArt] = await Promise.all([
-    eventMood ? ticketmasterEvent(eventMood, optionOffset, excluded) : Promise.resolve(undefined),
+    eventMood ? ticketmasterEvent(eventMood, optionOffset, excluded, input.date) : Promise.resolve(undefined),
     wantsDinner ? googlePlace(dinnerQuery, "dinner", "1830", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
     wantsDrinks ? googlePlace(drinkQuery, "drinks", "2030", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
     wantsArt ? googlePlace(artQuery, "activity", "2015", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
@@ -225,7 +227,8 @@ export async function POST(request: NextRequest) {
   const entertainment = eventMood ? liveEvent ?? catalogOption(eventMood === "Comedy" ? "comedy" : "live_music", optionOffset, excluded, input.budget, input.payer, eventMood) : undefined;
   const preferCrawled = optionOffset % 2 === 0;
   const dinner = wantsDinner ? (preferCrawled ? crawledDinner ?? liveDinner ?? geoDinner : liveDinner ?? geoDinner ?? crawledDinner) ?? catalogOption("dinner", optionOffset, excluded, input.budget, input.payer) : undefined;
-  const drinks = wantsDrinks ? (preferCrawled ? crawledDrinks ?? liveDrinks ?? geoDrinks : liveDrinks ?? geoDrinks ?? crawledDrinks) ?? catalogOption("drinks", optionOffset, excluded, input.budget, input.payer, drinkPreference) : undefined;
+  const exactDrink = drinkPreference ? catalogOption("drinks", optionOffset, excluded, input.budget, input.payer, drinkPreference) : undefined;
+  const drinks = wantsDrinks ? (drinkPreference ? (preferCrawled ? crawledDrinks ?? liveDrinks ?? exactDrink ?? geoDrinks : liveDrinks ?? crawledDrinks ?? exactDrink ?? geoDrinks) : (preferCrawled ? crawledDrinks ?? liveDrinks ?? geoDrinks : liveDrinks ?? geoDrinks ?? crawledDrinks) ?? catalogOption("drinks", optionOffset, excluded, input.budget, input.payer)) : undefined;
   const activity = wantsArt ? (preferCrawled ? crawledArt ?? liveArt ?? geoArt : liveArt ?? geoArt ?? crawledArt) ?? catalogOption("activity", optionOffset, excluded, input.budget, input.payer) : wantsActivity ? catalogOption("activity", optionOffset, excluded, input.budget, input.payer) : undefined;
   const middle = entertainment ?? activity;
 
