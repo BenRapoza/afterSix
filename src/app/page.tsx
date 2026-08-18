@@ -679,10 +679,14 @@ function Stop({
   );
 }
 function VenuePhoto({ imageUrl, sourceUrl, title }: { imageUrl?: string; sourceUrl: string; title: string }) {
-  const [failed, setFailed] = useState(false);
   const fallback = `/api/venue-image?title=${encodeURIComponent(title)}&url=${encodeURIComponent(sourceUrl)}`;
-  const src = failed ? undefined : imageUrl ?? fallback;
-  return src ? <img className="stop-photo" src={src} alt={`${title} venue`} width="176" height="132" loading="eager" decoding="async" fetchPriority="high" onError={() => setFailed(true)} /> : <div className="stop-photo stop-photo--unavailable" aria-label="Verified venue photo unavailable">{title.slice(0, 1)}</div>;
+  const [src, setSrc] = useState<string | undefined>(imageUrl ?? fallback);
+
+  // Google Photos is preferred, but its quota or an individual photo can fail.
+  // In that case, keep the image area useful by trying the venue-site image next.
+  useEffect(() => setSrc(imageUrl ?? fallback), [imageUrl, fallback]);
+
+  return src ? <img className="stop-photo" src={src} alt={`${title} venue`} width="176" height="132" loading="eager" decoding="async" fetchPriority="high" onError={() => setSrc((current) => current === fallback ? undefined : fallback)} /> : <div className="stop-photo stop-photo--unavailable" aria-label="Verified venue photo unavailable">{title.slice(0, 1)}</div>;
 }
 function StatusBadge({ status }: { status: CatalogItem["bookingStatus"] }) {
   const labels: Record<CatalogItem["bookingStatus"], string> = {
