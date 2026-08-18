@@ -67,6 +67,12 @@ const venueUrls: Record<string, string> = {
   "Laugh Boston": "https://www.laughboston.com/",
   "Kings Dining & Entertainment": "https://www.kingsbowling.com/",
 };
+const reservationProviders: Record<string, Array<{ label: "OpenTable" | "Resy"; url: string }>> = {
+  "Row 34": [{ label: "OpenTable", url: "https://www.opentable.com/r/row-34-reservations-boston?lang=en-US" }],
+  "Wink & Nod": [{ label: "OpenTable", url: "https://www.opentable.com/r/wink-and-nod-reservations-boston" }],
+  "Lookout Rooftop": [{ label: "OpenTable", url: "https://www.opentable.com/r/rooftop-at-the-envoy-boston" }],
+  "Rooftop at the Envoy": [{ label: "OpenTable", url: "https://www.opentable.com/r/rooftop-at-the-envoy-boston" }],
+};
 
 function randomPlannerPicks(previous: readonly (typeof plannerVenueCards)[number][] = []) {
   const shuffled = [...plannerVenueCards].sort(() => Math.random() - 0.5);
@@ -645,9 +651,10 @@ function Stop({
   onRegenerate: () => void;
   regenerating: boolean;
 }) {
-  const reservationSearch = `https://www.opentable.com/s?term=${encodeURIComponent(`${title} Boston`)}`;
-  const resySearch = `https://www.google.com/search?q=${encodeURIComponent(`${title} Boston site:resy.com`)}`;
-  const href = action === "Reserve" ? reservationSearch : sourceUrl || venueUrls[title];
+  const reservations = reservationProviders[title] ?? [];
+  const primaryReservation = action === "Reserve" ? reservations[0] : undefined;
+  const href = primaryReservation?.url ?? (sourceUrl || venueUrls[title]);
+  const actionLabel = primaryReservation?.label ?? (action === "Reserve" ? "Details" : action);
   const formatTime = (value: string) => {
     const digits = value.replace(/\D/g, "").padStart(4, "0");
     const hour = Number(digits.slice(0, 2));
@@ -677,10 +684,9 @@ function Stop({
         <VenuePhoto imageUrl={imageUrl} sourceUrl={sourceUrl} title={title} />
         <div className="reservation-links">
           <a className="venue-link" href={href} target="_blank" rel="noreferrer">
-            {action === "Reserve" ? "OpenTable" : action} <ArrowUpRight size={13} />
+            {actionLabel} <ArrowUpRight size={13} />
           </a>
-          {reservable && action !== "Reserve" && <a className="venue-link" href={reservationSearch} target="_blank" rel="noreferrer">OpenTable <ArrowUpRight size={13} /></a>}
-          {reservable && <a className="venue-link venue-link--resy" href={resySearch} target="_blank" rel="noreferrer">Resy <ArrowUpRight size={13} /></a>}
+          {reservable && reservations.slice(primaryReservation ? 1 : 0).map((reservation) => <a className={`venue-link ${reservation.label === "Resy" ? "venue-link--resy" : ""}`} key={reservation.label} href={reservation.url} target="_blank" rel="noreferrer">{reservation.label} <ArrowUpRight size={13} /></a>)}
         </div>
       </div>
     </div>
