@@ -289,15 +289,6 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
               <h2>Tonight, mapped out.</h2>
             </div>
           </div>
-          <div className="route-tools">
-            <WeatherChip />
-            <button className="edit-plan" onClick={() => void saveNight()}>{savedNight ? "Saved" : saveMessage || "Save night"}</button>
-            <button className="edit-plan" onClick={() => void shareNight()}>{savedNight ? "Share night" : "Save to share"}</button>
-            {savedNight && <button className="edit-plan" onClick={() => void finalizeNight()}>Finalize option</button>}
-            <button className="edit-plan" onClick={() => setPlanned(false)}>
-              <ArrowLeft size={14} /> Edit preferences
-            </button>
-          </div>
           <div className={`itinerary-stack itinerary-stack--${itinerary.length}`}>
             <OptionStack
               options={itineraryOptions}
@@ -372,6 +363,15 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
                 mood.
               </p>
             </div>
+          </div>
+          <div className="route-tools">
+            <WeatherChip />
+            <button className="edit-plan" onClick={() => void saveNight()}>{savedNight ? "Saved" : saveMessage || "Save night"}</button>
+            <button className="edit-plan" onClick={() => void shareNight()}>{savedNight ? "Share night" : "Save to share"}</button>
+            {savedNight && <button className="edit-plan" onClick={() => void finalizeNight()}>Finalize option</button>}
+            <button className="edit-plan" onClick={() => setPlanned(false)}>
+              <ArrowLeft size={14} /> Edit preferences
+            </button>
           </div>
         </section>
       </main>
