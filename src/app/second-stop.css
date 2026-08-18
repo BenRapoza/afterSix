@@ -23,6 +23,7 @@ nav .logo small { font: 500 10px/1.2 'DM Sans', sans-serif; letter-spacing: .08e
 .results .option-card-1 { z-index: 4; transform: translate(0, 16px); clip-path: inset(0 0 0 calc(100% - 38px)); }
 .results .option-card b { top: 10px; right: 8px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: #087eea; color: #fff; box-shadow: 0 3px 8px rgba(16,33,55,.22); }
 @media (max-width: 620px) {
+  html:has(main.landing-only) { scroll-snap-type: none !important; }
   main.landing-only > nav {
     position: relative !important;
     top: auto !important;
@@ -492,7 +493,7 @@ main:not(.results) .discover { display: none; }
   }
 
   .results .interactive-map { height: 100lvh !important; }
-  main.landing-only > nav { position: relative !important; top: auto !important; left: auto !important; right: auto !important; z-index: 5; }
+  main.landing-only > nav { position: relative !important; top: auto !important; left: auto !important; right: auto !important; z-index: 5; margin-bottom: -68px; background: transparent; }
 
   .results .route-tools { position: relative !important; z-index: 6; margin-bottom: 76px !important; }
 
