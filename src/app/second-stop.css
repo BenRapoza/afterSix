@@ -462,7 +462,7 @@ main:not(.results) .discover { display: none; }
   .results .route { padding-top: 14px !important; }
 
   /* Keep both inactive option tabs exposed above Moonlit Boston. */
-  .results .itinerary-stack { overflow: visible !important; }
+  .results .itinerary-stack { margin-top: 70px; overflow: visible !important; }
   .results .option-stack { right: 0 !important; top: -62px !important; bottom: auto; height: calc(100% + 62px); overflow: visible !important; }
   .results .option-card { clip-path: none !important; overflow: visible !important; }
   .results .option-card-0 { z-index: 1 !important; transform: translate(0, 0) !important; }
