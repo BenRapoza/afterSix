@@ -204,8 +204,8 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
     sessionStorage.setItem("aftersix-itinerary", JSON.stringify(immediateOptions[0]));
     setPlanned(true);
     try {
-      const options = await Promise.all(
-        [0, 1, 2].map(async (variant) => {
+      const options: CatalogItem[][] = [];
+      for (const variant of [0, 1, 2]) {
           const response = await fetch("/api/itineraries/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -216,19 +216,18 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
               transport,
               budget: budgetRanges[budgetIndex],
               payer,
-  date: nightDate,
-  startTime,
-  variant,
+              date: nightDate,
+              startTime,
+              variant,
               seed: generationSeed,
-              excludeIds: [...recentVenueIds, ...itineraryOptions.flat().map((item) => item.id)],
-  random,
+              // Each completed option blocks its venues from all later cards.
+              excludeIds: [...recentVenueIds, ...options.flat().map((item) => item.id)],
+              random,
             }),
           });
           if (!response.ok) throw new Error("Unable to build your night");
-          return ((await response.json()) as { itinerary: CatalogItem[] })
-            .itinerary;
-        }),
-      );
+          options.push(((await response.json()) as { itinerary: CatalogItem[] }).itinerary);
+      }
       setItineraryOptions(options);
       rememberVenues(options);
       setActiveOption(0);

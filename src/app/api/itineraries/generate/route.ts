@@ -118,7 +118,7 @@ async function geoapifyPlace(category: CatalogItem["category"], start: string, v
     if (!response.ok) return undefined;
     const features = ((await response.json()) as { features?: GeoapifyFeature[] }).features ?? [];
     const available = features.filter((item) => !excluded.includes(`geoapify-${item.properties?.place_id ?? item.properties?.name}`));
-    const feature = (available.length ? available : features)[variant % (available.length || features.length)];
+    const feature = available[variant % available.length];
     const coordinates = feature?.geometry?.coordinates;
     const properties = feature?.properties;
     if (!coordinates || !properties?.name) return undefined;
@@ -156,7 +156,7 @@ async function googlePlace(query: string, category: CatalogItem["category"], sta
     if (!response.ok) return undefined;
     const places = ((await response.json()) as { places?: GooglePlace[] }).places?.filter((item) => item.location && item.displayName?.text && (item.businessStatus === undefined || item.businessStatus === "OPERATIONAL")).sort((a, b) => placeScore(b, budget, payer) - placeScore(a, budget, payer)) ?? [];
     const available = places.filter((item) => !excluded.includes(`google-${item.id}`));
-    const place = (available.length ? available : places)[variant % (available.length || places.length)];
+    const place = available[variant % available.length];
     if (!place?.location || !place.displayName?.text) return undefined;
     const rating = place.rating ? ` · ${place.rating.toFixed(1)}★` : "";
     const photo = place.photos?.[0]?.name;
@@ -181,7 +181,7 @@ async function firecrawlPlace(query: string, category: CatalogItem["category"], 
     const excludedHosts = /yelp|tripadvisor|opentable|resy|instagram|facebook|tiktok|reddit|quora/i;
     const results = (data.data?.web ?? []).filter((item) => item.url && !excludedHosts.test(item.url) && (item.title || item.metadata?.title) && isVenueSearchResult(item));
     const available = results.filter((item) => !excluded.includes(`firecrawl-${encodeURIComponent(item.url ?? item.title ?? "")}`));
-    const result = (available.length ? available : results)[variant % (available.length || results.length)];
+    const result = available[variant % available.length];
     if (!result) return undefined;
     const rawName = result.title ?? result.metadata?.title ?? "Boston venue";
     const name = cleanVenueName(rawName);
@@ -204,7 +204,7 @@ async function ticketmasterEvent(mood?: string, variant = 0, excluded: string[] 
     const data = await response.json() as { _embedded?: { events?: TicketmasterEvent[] } };
     const events = data._embedded?.events?.filter((item) => item._embedded?.venues?.[0]) ?? [];
     const available = events.filter((item) => !excluded.includes(`ticketmaster-${item.id}`));
-    const event = (available.length ? available : events)[variant % (available.length || events.length)];
+    const event = available[variant % available.length];
     const venue = event?._embedded?.venues?.[0];
     if (!event || !venue) return undefined;
     const suppliedLatitude = Number(venue.location?.latitude), suppliedLongitude = Number(venue.location?.longitude);
