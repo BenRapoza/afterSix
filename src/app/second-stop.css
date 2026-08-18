@@ -403,7 +403,7 @@ main:not(.results) .discover { display: none; }
   .results .edit-plan { position: static !important; margin: 0 0 14px auto; padding: 9px 12px; font-size: 11px; }
   .results .route-tools { position: static; justify-content: flex-end; margin: 0 0 14px; }
   .results .route-tools .edit-plan { margin: 0; }
-  .weather-chip { min-height: 34px; padding: 0 10px; font-size: 11px; }
+  .weather-chip { min-width: 58px; min-height: 34px; padding: 0 10px; justify-content: center; text-align: center; font-size: 11px; }
   .results .itinerary-stack { width: calc(100% - 32px); zoom: 1 !important; transform: none; overflow: visible; }
   .results .itinerary-stack--1, .results .itinerary-stack--2 { zoom: 1 !important; }
   .results .option-stack { right: -34px; top: 8px; }
