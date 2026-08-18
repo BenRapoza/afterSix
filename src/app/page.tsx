@@ -137,6 +137,12 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
     setSaveMessage("Share link copied");
   }
 
+  async function finalizeNight() {
+    if (!savedNight) { await saveNight(); return; }
+    const response = await fetch(`/api/shared-nights/${savedNight.share_code}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "finalize", optionIndex: activeOption }) });
+    setSaveMessage(response.ok ? `Option ${String.fromCharCode(65 + activeOption)} finalized` : "Couldn’t finalize night");
+  }
+
   function rememberVenues(options: CatalogItem[][]) {
     setRecentVenueIds((current) => {
       const next = [...new Set([...current, ...options.flat().map((item) => item.id)])].slice(-60);
@@ -284,6 +290,7 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
             <WeatherChip />
             <button className="edit-plan" onClick={() => void saveNight()}>{savedNight ? "Saved" : saveMessage || "Save night"}</button>
             <button className="edit-plan" onClick={() => void shareNight()}>{savedNight ? "Share night" : "Save to share"}</button>
+            {savedNight && <button className="edit-plan" onClick={() => void finalizeNight()}>Finalize option</button>}
             <button className="edit-plan" onClick={() => setPlanned(false)}>
               <ArrowLeft size={14} /> Edit preferences
             </button>
