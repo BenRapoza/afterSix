@@ -494,6 +494,8 @@ main:not(.results) .discover { display: none; }
   .results .interactive-map { height: 100lvh !important; }
   main.landing-only > nav { position: relative !important; top: auto !important; left: auto !important; right: auto !important; z-index: 5; }
 
+  .results .route-tools { position: relative !important; z-index: 6; margin-bottom: 76px !important; }
+
   .hero,
   .planner-page,
   .discover,
