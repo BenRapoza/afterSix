@@ -6,6 +6,15 @@ type GooglePlace = { id: string; displayName?: { text?: string }; formattedAddre
 type FirecrawlResult = { title?: string; description?: string; url?: string; metadata?: { title?: string; description?: string; sourceURL?: string } };
 type GeoapifyFeature = { properties?: { place_id?: string; name?: string; formatted?: string; categories?: string[]; website?: string; datasource?: { raw?: { opening_hours?: string } } }; geometry?: { coordinates?: [number, number] } };
 const BOSTON = { latitude: 42.3601, longitude: -71.0589 };
+
+function isVenueSearchResult(item: FirecrawlResult) {
+  const url = item.url ?? item.metadata?.sourceURL ?? "";
+  const copy = `${item.title ?? ""} ${item.description ?? ""} ${item.metadata?.title ?? ""} ${item.metadata?.description ?? ""}`;
+  const editorialPath = /(^|\/)(blog|news|guide|guides|events|articles?|magazine|press)(\/|$)|\/(best|top-?\d+|things-to-do)(\/|$)/i;
+  const editorialCopy = /\b(blog|guide|best\s+\d+|top\s+\d+|things to do|where to|near me|roundup|list of|calendar|article)\b/i;
+  const closed = /permanently closed|closed permanently|no longer open/i;
+  return Boolean(url) && !editorialPath.test(url) && !editorialCopy.test(copy) && !closed.test(copy);
+}
 const drinkOptions = ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges", "Nightlife"];
 const eventOptions = ["Live music", "Local bands", "Open mic", "Comedy", "Theater"];
 const activityOptions = ["Art events", "Museums with evening hours", "Activities", "Dancing"];
@@ -154,7 +163,7 @@ async function firecrawlPlace(query: string, category: CatalogItem["category"], 
     if (!response.ok) return undefined;
     const data = await response.json() as { success?: boolean; data?: { web?: FirecrawlResult[] } };
     const excludedHosts = /yelp|tripadvisor|opentable|resy|instagram|facebook|tiktok/i;
-    const results = (data.data?.web ?? []).filter((item) => item.url && !excludedHosts.test(item.url) && (item.title || item.metadata?.title) && !/permanently closed|closed permanently|no longer open/i.test(`${item.title ?? ""} ${item.description ?? ""} ${item.metadata?.description ?? ""}`));
+    const results = (data.data?.web ?? []).filter((item) => item.url && !excludedHosts.test(item.url) && (item.title || item.metadata?.title) && isVenueSearchResult(item));
     const available = results.filter((item) => !excluded.includes(`firecrawl-${encodeURIComponent(item.url ?? item.title ?? "")}`));
     const result = (available.length ? available : results)[variant % (available.length || results.length)];
     if (!result) return undefined;
