@@ -21,6 +21,7 @@ function cleanVenueCopy(value: string) {
   return value
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     .replace(/https?:\/\/\S+/g, "")
+    .replace(/,?\s*(United States(?: of America)?|USA)\b\.?/gi, "")
     .replace(/\s+/g, " ")
     .trim();
 }
