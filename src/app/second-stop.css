@@ -461,3 +461,25 @@ main:not(.results) .discover { display: none; }
   .results .option-card-1 { transform: translate(12px, 14px) !important; }
   .results .option-card b { display: grid !important; place-items: center; top: 8px !important; right: 7px !important; width: 26px; height: 26px; border-radius: 50%; background: #087eea; color: #fff; }
 }
+
+/* Let iOS Safari's floating bottom bar overlay content instead of shortening each screen. */
+@media (max-width: 620px) {
+  body,
+  main.landing-only,
+  main.planner-only,
+  main.how-only,
+  .results { min-height: 100lvh !important; }
+
+  .hero,
+  .planner-page,
+  .discover,
+  .how,
+  .results .route {
+    height: auto !important;
+    min-height: 100lvh !important;
+    overflow-y: visible !important;
+    padding-bottom: max(52px, calc(env(safe-area-inset-bottom) + 28px)) !important;
+  }
+
+  .results .interactive-map { height: 100lvh !important; }
+}
