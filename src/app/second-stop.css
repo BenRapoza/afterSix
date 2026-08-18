@@ -489,7 +489,8 @@ main:not(.results) .discover { display: none; }
     height: auto !important;
     min-height: 100lvh !important;
     overflow-y: visible !important;
-    padding-bottom: max(52px, calc(env(safe-area-inset-bottom) + 28px)) !important;
+    /* Let Safari's floating controls overlay the page instead of reserving a bottom gap. */
+    padding-bottom: 0 !important;
   }
 
   .results .interactive-map { height: 100lvh !important; }
