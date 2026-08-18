@@ -179,11 +179,13 @@ async function ticketmasterEvent(mood?: string, variant = 0, excluded: string[] 
     const isComedy = event.classifications?.some((item) => item.segment?.name === "Comedy") ?? mood === "Comedy";
     const start = event.dates?.start?.localTime?.slice(0, 5).replace(":", "") ?? "2015";
     const startMinutes = minutesFromStart(start);
-    return { id: `ticketmaster-${event.id}`, name: event.name, neighborhood: venue.name ?? "Boston", category: isComedy ? "comedy" : "live_music", start, arrivalTime: timeFromMinutes(startMinutes - 15), doorsTime: timeFromMinutes(startMinutes - 60), endTime: timeFromMinutes(startMinutes + 120), durationMinutes: 120, costPerPerson: event.priceRanges?.[0]?.min ?? 0, bookingStatus: "ticket_required", description: `Live event${event.dates?.start?.localDate ? ` · ${event.dates.start.localDate}` : ""}`, sourceUrl: event.url ?? "https://www.ticketmaster.com/", availabilityUpdatedAt: new Date().toISOString(), imageUrl: event.images?.sort((a, b) => (b.width ?? 0) - (a.width ?? 0))[0]?.url, ...coordinates };
+    const image = event.images?.sort((a, b) => Math.abs((a.width ?? 800) - 800) - Math.abs((b.width ?? 800) - 800))[0]?.url;
+    return { id: `ticketmaster-${event.id}`, name: event.name, neighborhood: venue.name ?? "Boston", category: isComedy ? "comedy" : "live_music", start, arrivalTime: timeFromMinutes(startMinutes - 15), doorsTime: timeFromMinutes(startMinutes - 60), endTime: timeFromMinutes(startMinutes + 120), durationMinutes: 120, costPerPerson: event.priceRanges?.[0]?.min ?? 0, bookingStatus: "ticket_required", description: `Live event${event.dates?.start?.localDate ? ` · ${event.dates.start.localDate}` : ""}`, sourceUrl: event.url ?? "https://www.ticketmaster.com/", availabilityUpdatedAt: new Date().toISOString(), imageUrl: image ? `/api/event-image?url=${encodeURIComponent(image)}` : undefined, ...coordinates };
   } catch { return undefined; }
 }
 
 export async function POST(request: NextRequest) {
+  const startedAt = Date.now();
   const input = await request.json() as { mood?: string; moods?: string[]; food?: string; transport?: string; budget?: string; payer?: string; date?: string; startTime?: string; variant?: number; seed?: number; random?: boolean; excludeIds?: string[] };
   const variant = input.variant ?? 0;
   const optionOffset = (input.seed ?? 0) + variant;
@@ -217,11 +219,14 @@ export async function POST(request: NextRequest) {
   const activity = wantsArt ? (preferCrawled ? crawledArt ?? liveArt ?? geoArt : liveArt ?? geoArt ?? crawledArt) ?? catalogOption("activity", optionOffset, excluded, input.budget, input.payer) : wantsActivity ? catalogOption("activity", optionOffset, excluded, input.budget, input.payer) : undefined;
   const middle = entertainment ?? activity;
 
-  return NextResponse.json({
+  const itinerary = await addRouteTimes(arrangeStops(dinner, middle, drinks), input.transport);
+  const response = NextResponse.json({
     city: "Boston, MA",
     input,
-    itinerary: await addRouteTimes(arrangeStops(dinner, middle, drinks), input.transport),
+    itinerary,
     generatedAt: new Date().toISOString(),
     source: crawledDinner || crawledDrinks || crawledArt ? "Firecrawl + Ticketmaster + Google Places with afterSix fallback" : liveEvent || liveDinner || liveDrinks || liveArt ? "Ticketmaster + Google Places with afterSix fallback" : "afterSix Boston catalog",
   });
+  console.log(JSON.stringify({ level: "info", msg: "itinerary_generated", route: "/api/itineraries/generate", ms: Date.now() - startedAt, requestId: request.headers.get("x-vercel-id"), stops: itinerary.length }));
+  return response;
 }

@@ -680,7 +680,7 @@ function VenuePhoto({ imageUrl, sourceUrl, title }: { imageUrl?: string; sourceU
   const [failed, setFailed] = useState(false);
   const fallback = `/api/venue-image?title=${encodeURIComponent(title)}&url=${encodeURIComponent(sourceUrl)}`;
   const src = failed ? undefined : imageUrl ?? fallback;
-  return src ? <img className="stop-photo" src={src} alt={`${title} venue`} onError={() => setFailed(true)} /> : <div className="stop-photo stop-photo--unavailable" aria-label="Verified venue photo unavailable">{title.slice(0, 1)}</div>;
+  return src ? <img className="stop-photo" src={src} alt={`${title} venue`} width="176" height="132" loading="eager" decoding="async" fetchPriority="high" onError={() => setFailed(true)} /> : <div className="stop-photo stop-photo--unavailable" aria-label="Verified venue photo unavailable">{title.slice(0, 1)}</div>;
 }
 function StatusBadge({ status }: { status: CatalogItem["bookingStatus"] }) {
   const labels: Record<CatalogItem["bookingStatus"], string> = {

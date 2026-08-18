@@ -8,5 +8,5 @@ export async function GET(request: NextRequest) {
   if (!key || !name || !/^places\/[^/]+\/photos\/[^/]+$/.test(name)) return new NextResponse(null, { status: 400 });
   const response = await fetch(`https://places.googleapis.com/v1/${name}/media?maxHeightPx=320&key=${key}`);
   if (!response.ok) return new NextResponse(null, { status: response.status });
-  return new NextResponse(response.body, { headers: { "Content-Type": response.headers.get("content-type") ?? "image/jpeg", "Cache-Control": "public, max-age=86400" } });
+  return new NextResponse(response.body, { headers: { "Content-Type": response.headers.get("content-type") ?? "image/jpeg", "Cache-Control": "public, max-age=86400, s-maxage=2592000, stale-while-revalidate=604800" } });
 }
