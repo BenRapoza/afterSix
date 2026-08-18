@@ -112,7 +112,7 @@ async function geoapifyPlace(category: CatalogItem["category"], start: string, v
   if (!key) return undefined;
   const queryCategory = category === "dinner" ? "catering.restaurant" : category === "drinks" ? "catering.bar" : "entertainment.museum";
   try {
-    const params = new URLSearchParams({ categories: queryCategory, filter: "circle:-71.0589,42.3601,7000", bias: "proximity:-71.0589,42.3601", limit: "20", apiKey: key });
+    const params = new URLSearchParams({ categories: queryCategory, filter: "circle:-71.0589,42.3601,7000", bias: "proximity:-71.0589,42.3601", limit: "50", apiKey: key });
     const response = await fetch(`https://api.geoapify.com/v2/places?${params}`, { signal: AbortSignal.timeout(1_500) });
     if (!response.ok) return undefined;
     const features = ((await response.json()) as { features?: GeoapifyFeature[] }).features ?? [];
@@ -172,7 +172,7 @@ async function firecrawlPlace(query: string, category: CatalogItem["category"], 
     const response = await fetch("https://api.firecrawl.dev/v2/search", {
       method: "POST",
       headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ query: `${query} official website`, limit: 5, sources: ["web"], location: "Boston, Massachusetts, United States", country: "US", timeout: 2_000 }),
+      body: JSON.stringify({ query: `${query} official website`, limit: 12, sources: ["web"], location: "Boston, Massachusetts, United States", country: "US", timeout: 2_000 }),
       signal: AbortSignal.timeout(1_500),
     });
     if (!response.ok) return undefined;
