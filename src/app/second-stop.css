@@ -460,12 +460,12 @@ main:not(.results) .discover { display: none; }
 
   .results .route { padding-top: 14px !important; }
 
-  /* Keep both inactive option tabs exposed to the right of Moonlit Boston. */
+  /* Keep both inactive option tabs exposed above Moonlit Boston. */
   .results .itinerary-stack { overflow: visible !important; }
-  .results .option-stack { right: -46px !important; top: 10px !important; bottom: 0; overflow: visible !important; }
+  .results .option-stack { right: 0 !important; top: -62px !important; bottom: auto; height: calc(100% + 62px); overflow: visible !important; }
   .results .option-card { clip-path: none !important; overflow: visible !important; }
-  .results .option-card-0 { transform: translate(-24px, 7px) !important; }
-  .results .option-card-1 { transform: translate(0, 14px) !important; }
+  .results .option-card-0 { z-index: 1 !important; transform: translate(0, 0) !important; }
+  .results .option-card-1 { z-index: 2 !important; transform: translate(0, 32px) !important; }
   .results .option-card b { display: grid !important; place-items: center; top: 8px !important; right: 7px !important; width: 26px; height: 26px; border-radius: 50%; background: #087eea; color: #fff; }
 }
 
