@@ -1,7 +1,6 @@
 @media (max-width: 650px) {
-  .nav { height: 66px; padding: max(12px, env(safe-area-inset-top)) 18px 0; }
-  .back { display: inline-flex; align-items: center; gap: 8px; font: 500 17px/1 Arial, sans-serif !important; letter-spacing: 0 !important; }
-  .back span { font: italic 400 27px/1 'Cormorant Garamond', serif; letter-spacing: -2px; }
+  .nav { height: 66px; padding: 0 18px; }
+  .nav a:first-child { font-size: 34px; letter-spacing: -2px; }
   .nav a:last-child { font-size: 12px; }
   .content { padding: 38px 18px 44px; }
   .content h1 { font-size: clamp(52px, 17vw, 72px); letter-spacing: -3px; }
