@@ -11,9 +11,10 @@ function isVenueSearchResult(item: FirecrawlResult) {
   const url = item.url ?? item.metadata?.sourceURL ?? "";
   const copy = `${item.title ?? ""} ${item.description ?? ""} ${item.metadata?.title ?? ""} ${item.metadata?.description ?? ""}`;
   const editorialPath = /(^|\/)(blog|news|guide|guides|events|articles?|magazine|press)(\/|$)|\/(best|top-?\d+|things-to-do)(\/|$)/i;
-  const editorialCopy = /\b(blog|guide|best\s+\d+|top\s+\d+|things to do|where to|near me|roundup|list of|calendar|article)\b/i;
+  const editorialCopy = /\b(blog|guide|best|top|things to do|where to|near me|roundup|list of|calendar|article|recommendations?|visiting)\b/i;
   const closed = /permanently closed|closed permanently|no longer open/i;
-  return Boolean(url) && !editorialPath.test(url) && !editorialCopy.test(copy) && !closed.test(copy);
+  const questionOrForum = /\?|^(i |we |my |anyone |can you |what |which |where )/i.test(item.title ?? "") || /reddit|quora|stackoverflow|tripadvisor/i.test(url);
+  return Boolean(url) && !editorialPath.test(url) && !editorialCopy.test(copy) && !closed.test(copy) && !questionOrForum;
 }
 const drinkOptions = ["Cocktails", "Wine bars", "Breweries", "Sports bars", "Speakeasies", "Rooftop bars", "Lounges", "Nightlife"];
 const eventOptions = ["Live music", "Local bands", "Open mic", "Comedy", "Theater"];
@@ -162,7 +163,7 @@ async function firecrawlPlace(query: string, category: CatalogItem["category"], 
     });
     if (!response.ok) return undefined;
     const data = await response.json() as { success?: boolean; data?: { web?: FirecrawlResult[] } };
-    const excludedHosts = /yelp|tripadvisor|opentable|resy|instagram|facebook|tiktok/i;
+    const excludedHosts = /yelp|tripadvisor|opentable|resy|instagram|facebook|tiktok|reddit|quora/i;
     const results = (data.data?.web ?? []).filter((item) => item.url && !excludedHosts.test(item.url) && (item.title || item.metadata?.title) && isVenueSearchResult(item));
     const available = results.filter((item) => !excluded.includes(`firecrawl-${encodeURIComponent(item.url ?? item.title ?? "")}`));
     const result = (available.length ? available : results)[variant % (available.length || results.length)];
