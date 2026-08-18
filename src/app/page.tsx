@@ -252,6 +252,32 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
     }
   }, [plannerOnly]);
 
+  useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+    const onStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      startX = touch.clientX;
+      startY = touch.clientY;
+    };
+    const onEnd = (event: TouchEvent) => {
+      if (!window.matchMedia("(max-width: 620px)").matches) return;
+      const touch = event.changedTouches[0];
+      const deltaX = touch?.clientX - startX;
+      const deltaY = touch?.clientY - startY;
+      if (!touch || Math.abs(deltaX) < 88 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+      if (deltaX < 0 && !planned && !plannerOnly && !howOnly) window.location.assign("/explore");
+      if (deltaX > 0 && planned) setPlanned(false);
+    };
+    window.addEventListener("touchstart", onStart, { passive: true });
+    window.addEventListener("touchend", onEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onStart);
+      window.removeEventListener("touchend", onEnd);
+    };
+  }, [planned, plannerOnly, howOnly]);
+
   function chooseOption(index: number) {
     const nextItinerary = itineraryOptions[index];
     if (!nextItinerary) return;
@@ -285,6 +311,9 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
     return (
       <main className="results">
         <Nav showMap stops={itinerary} />
+        <button className="mobile-page-back" onClick={() => setPlanned(false)} aria-label="Back to Build your night">
+          <ArrowLeft size={19} />
+        </button>
         <section className="route">
           <div className="heading">
             <div>

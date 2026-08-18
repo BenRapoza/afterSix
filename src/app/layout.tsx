@@ -19,6 +19,7 @@ import "./people-nightlife.css";
 import "./section-labels.css";
 import "./brand-detail-tweaks.css";
 import "./second-stop.css";
+import "./ios-mobile-redesign.css";
 
 export const metadata: Metadata = {
   title: "afterSix — Date night, planned",
