@@ -40,9 +40,11 @@ function arrangeStops(dinner?: CatalogItem, middle?: CatalogItem, drinks?: Catal
   return [dinner, middle, drinks].filter((item): item is CatalogItem => Boolean(item));
 }
 
-function catalogOption(category: CatalogItem["category"], offset: number, excluded: string[] = []) {
+function catalogOption(category: CatalogItem["category"], offset: number, excluded: string[] = [], budget?: string, payer?: string) {
   const options = bostonCatalog.filter((item) => item.category === category && !excluded.includes(item.id));
-  return options.length ? options[offset % options.length] : undefined;
+  const target = budgetTarget(budget, payer) * 25;
+  const ranked = [...options].sort((a, b) => Math.abs(a.costPerPerson * 2 - target) - Math.abs(b.costPerPerson * 2 - target));
+  return ranked.length ? ranked[offset % ranked.length] : undefined;
 }
 
 function distanceFromBoston(place: GooglePlace) {
@@ -54,16 +56,14 @@ function distanceFromBoston(place: GooglePlace) {
   return 3958.8 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function budgetTarget(budget?: string) {
-  if (budget === "$100–150" || budget === "$150+") return 4;
-  if (budget === "$75–100") return 3;
-  if (budget === "$50–75") return 2;
-  return 1;
+function budgetTarget(budget?: string, payer?: string) {
+  const tier = budget === "$100–150" || budget === "$150+" ? 4 : budget === "$75–100" ? 3 : budget === "$50–75" ? 2 : 1;
+  return payer === "Split evenly" ? Math.min(4, tier + 1) : tier;
 }
 
-function placeScore(place: GooglePlace, budget?: string) {
+function placeScore(place: GooglePlace, budget?: string, payer?: string) {
   const price = { PRICE_LEVEL_INEXPENSIVE: 1, PRICE_LEVEL_MODERATE: 2, PRICE_LEVEL_EXPENSIVE: 3, PRICE_LEVEL_VERY_EXPENSIVE: 4 }[place.priceLevel ?? ""] ?? 2;
-  return (place.rating ?? 0) * 10 + (place.currentOpeningHours?.openNow ? 5 : 0) - distanceFromBoston(place) - Math.abs(price - budgetTarget(budget)) * 3;
+  return (place.rating ?? 0) * 10 + (place.currentOpeningHours?.openNow ? 5 : 0) - distanceFromBoston(place) - Math.abs(price - budgetTarget(budget, payer)) * 3;
 }
 
 async function geocodeVenue(name: string, neighborhood: string) {
@@ -113,7 +113,7 @@ async function addRouteTimes(stops: CatalogItem[], transport?: string) {
   return next;
 }
 
-async function googlePlace(query: string, category: CatalogItem["category"], start: string, variant = 0, budget?: string, excluded: string[] = []): Promise<CatalogItem | undefined> {
+async function googlePlace(query: string, category: CatalogItem["category"], start: string, variant = 0, budget?: string, payer?: string, excluded: string[] = []): Promise<CatalogItem | undefined> {
   const key = process.env.GOOGLE_MAPS_API_KEY;
   if (!key) return undefined;
   try {
@@ -124,7 +124,7 @@ async function googlePlace(query: string, category: CatalogItem["category"], sta
       signal: AbortSignal.timeout(1_750),
     });
     if (!response.ok) return undefined;
-    const places = ((await response.json()) as { places?: GooglePlace[] }).places?.filter((item) => item.location && item.displayName?.text).sort((a, b) => placeScore(b, budget) - placeScore(a, budget)) ?? [];
+    const places = ((await response.json()) as { places?: GooglePlace[] }).places?.filter((item) => item.location && item.displayName?.text).sort((a, b) => placeScore(b, budget, payer) - placeScore(a, budget, payer)) ?? [];
     const available = places.filter((item) => !excluded.includes(`google-${item.id}`));
     const place = (available.length ? available : places)[variant % (available.length || places.length)];
     if (!place?.location || !place.displayName?.text) return undefined;
@@ -200,9 +200,9 @@ export async function POST(request: NextRequest) {
   const artQuery = selections.includes("Museums with evening hours") ? "museum with evening hours in Boston, MA" : "art event venue in Boston, MA";
   const [liveEvent, liveDinner, liveDrinks, liveArt, crawledDinner, crawledDrinks, crawledArt, geoDinner, geoDrinks, geoArt] = await Promise.all([
     eventMood ? ticketmasterEvent(eventMood, optionOffset, excluded) : Promise.resolve(undefined),
-    wantsDinner ? googlePlace(dinnerQuery, "dinner", "1830", optionOffset, input.budget, excluded) : Promise.resolve(undefined),
-    wantsDrinks ? googlePlace(drinkQuery, "drinks", "2030", optionOffset, input.budget, excluded) : Promise.resolve(undefined),
-    wantsArt ? googlePlace(artQuery, "activity", "2015", optionOffset, input.budget, excluded) : Promise.resolve(undefined),
+    wantsDinner ? googlePlace(dinnerQuery, "dinner", "1830", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
+    wantsDrinks ? googlePlace(drinkQuery, "drinks", "2030", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
+    wantsArt ? googlePlace(artQuery, "activity", "2015", optionOffset, input.budget, input.payer, excluded) : Promise.resolve(undefined),
     wantsDinner && shouldSearchWeb ? firecrawlPlace(dinnerQuery, "dinner", "1830", optionOffset, excluded) : Promise.resolve(undefined),
     wantsDrinks && shouldSearchWeb ? firecrawlPlace(drinkQuery, "drinks", "2030", optionOffset, excluded) : Promise.resolve(undefined),
     wantsArt && shouldSearchWeb ? firecrawlPlace(artQuery, "activity", "2015", optionOffset, excluded) : Promise.resolve(undefined),
@@ -210,11 +210,11 @@ export async function POST(request: NextRequest) {
     wantsDrinks ? geoapifyPlace("drinks", "2030", optionOffset, excluded) : Promise.resolve(undefined),
     wantsArt ? geoapifyPlace("activity", "2015", optionOffset, excluded) : Promise.resolve(undefined),
   ]);
-  const entertainment = eventMood ? liveEvent ?? catalogOption(eventMood === "Comedy" ? "comedy" : "live_music", optionOffset, excluded) : undefined;
+  const entertainment = eventMood ? liveEvent ?? catalogOption(eventMood === "Comedy" ? "comedy" : "live_music", optionOffset, excluded, input.budget, input.payer) : undefined;
   const preferCrawled = optionOffset % 2 === 0;
-  const dinner = wantsDinner ? (preferCrawled ? crawledDinner ?? liveDinner ?? geoDinner : liveDinner ?? geoDinner ?? crawledDinner) ?? catalogOption("dinner", optionOffset, excluded) : undefined;
-  const drinks = wantsDrinks ? (preferCrawled ? crawledDrinks ?? liveDrinks ?? geoDrinks : liveDrinks ?? geoDrinks ?? crawledDrinks) ?? catalogOption("drinks", optionOffset, excluded) : undefined;
-  const activity = wantsArt ? (preferCrawled ? crawledArt ?? liveArt ?? geoArt : liveArt ?? geoArt ?? crawledArt) ?? catalogOption("activity", optionOffset, excluded) : wantsActivity ? catalogOption("activity", optionOffset, excluded) : undefined;
+  const dinner = wantsDinner ? (preferCrawled ? crawledDinner ?? liveDinner ?? geoDinner : liveDinner ?? geoDinner ?? crawledDinner) ?? catalogOption("dinner", optionOffset, excluded, input.budget, input.payer) : undefined;
+  const drinks = wantsDrinks ? (preferCrawled ? crawledDrinks ?? liveDrinks ?? geoDrinks : liveDrinks ?? geoDrinks ?? crawledDrinks) ?? catalogOption("drinks", optionOffset, excluded, input.budget, input.payer) : undefined;
+  const activity = wantsArt ? (preferCrawled ? crawledArt ?? liveArt ?? geoArt : liveArt ?? geoArt ?? crawledArt) ?? catalogOption("activity", optionOffset, excluded, input.budget, input.payer) : wantsActivity ? catalogOption("activity", optionOffset, excluded, input.budget, input.payer) : undefined;
   const middle = entertainment ?? activity;
 
   return NextResponse.json({

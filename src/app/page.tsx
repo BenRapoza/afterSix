@@ -315,7 +315,7 @@ export default function Home({ plannerOnly = false, howOnly = false }: { planner
                 </h3>
               </div>
               <div className="total">
-                <small>EST. FOR TWO</small>
+                <small>{payer === "Split evenly" ? "BUDGET · EACH" : "TOTAL BUDGET"}</small>
                 <b>{budgetRanges[budgetIndex]}</b>
                 <small className="per-person">Per person</small>
                 <span>
