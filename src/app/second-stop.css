@@ -431,3 +431,33 @@ main:not(.results) .discover { display: none; }
 .shared-options button span { color: #387ca5; margin: 6px 0 14px; }
 .shared-options button p { border-top: 1px solid rgba(0,0,0,.1); padding-top: 9px; }
 @media (max-width: 620px) { .shared-night { padding: 24px; } .shared-night nav { margin-bottom: 8vh; } .shared-options { grid-template-columns: 1fr; } }
+
+/* Mobile itinerary: the page chrome scrolls, while the map stays a calm backdrop. */
+@media (max-width: 620px) {
+  .results > nav {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    z-index: 5;
+  }
+
+  .results .interactive-map {
+    position: fixed !important;
+    inset: 0 !important;
+    height: 100dvh !important;
+    pointer-events: none;
+  }
+
+  .results .interactive-map .leaflet-container { pointer-events: none; }
+
+  .results .route { padding-top: 14px !important; }
+
+  /* Keep both inactive option tabs exposed to the right of Moonlit Boston. */
+  .results .itinerary-stack { overflow: visible !important; }
+  .results .option-stack { right: -78px !important; top: 8px !important; bottom: 0; overflow: visible !important; }
+  .results .option-card { clip-path: none !important; overflow: visible !important; }
+  .results .option-card-0 { transform: translate(-22px, 7px) !important; }
+  .results .option-card-1 { transform: translate(12px, 14px) !important; }
+  .results .option-card b { display: grid !important; place-items: center; top: 8px !important; right: 7px !important; width: 26px; height: 26px; border-radius: 50%; background: #087eea; color: #fff; }
+}
